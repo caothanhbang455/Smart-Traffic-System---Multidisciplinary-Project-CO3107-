@@ -80,38 +80,111 @@ class TrafficDetector :
         return image[top : bottom, left : right]
 
 
-    def _compute_edge_density(self, image : np.ndarray) :
+    def _compute_edge_density(self, image : np.ndarray, boxes) :
         """
-        Compute density using Canny edge detection.
+        Hybrid density estimation using:
+
+        1. YOLO detection for large vehicles (car, bus, truck)
+        2. Canny edge detection for small vehicle clusters
+        3. Removing large vehicle areas from edge mask
+        4. Zone-based density estimation (near / mid / far)
+
+        This avoids double counting large vehicles and focuses
+        edge detection on dense motorcycle clusters.
         """
 
-        gray    = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        img_h, img_w = image.shape[ : 2]
+
+        # -------------------------------------------------
+        # 1. Collect large vehicle bounding boxes from YOLO
+        # -------------------------------------------------
+
+        large_boxes = []
+
+        if boxes is not None :
+
+            for box in boxes :
+
+                cls_id = int(box.cls[0])
+                label = self.model.names[cls_id]
+
+                if label in [ "car", "bus", "truck" ] :
+
+                    x1, y1, x2, y2 = map(int, box.xyxy[0].cpu().numpy())
+                    large_boxes.append((x1, y1, x2, y2))
+
+        # -------------------------------------------------
+        # 2. Edge detection pipeline
+        # -------------------------------------------------
+
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-        edges   = cv2.Canny(blurred, 50, 150)
-        
+        edges = cv2.Canny(blurred, 50, 150)
+
+        # -------------------------------------------------
+        # 3. Remove large vehicle regions from edge mask
+        # -------------------------------------------------
+
+        for (x1, y1, x2, y2) in large_boxes :
+            cv2.rectangle(edges, (x1, y1), (x2, y2), 0, -1)
+
+        # -------------------------------------------------
+        # 4. Close small edge gaps
+        # -------------------------------------------------
+
         kernel = np.ones((5, 5), np.uint8)
         closed_edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
-        h, w = closed_edges.shape
 
-        # divide image into 3 zones vertically
-        zone_height = h // 3
+        # -------------------------------------------------
+        # 5. Define vertical zones
+        # -------------------------------------------------
 
-        zone_near = closed_edges[2 * zone_height : h, : ]
-        zone_mid  = closed_edges[zone_height : 2 * zone_height, : ]
-        zone_far  = closed_edges[0 : zone_height, : ]
+        y_start = int(img_h * 0.25)
+        zone_h = (img_h - y_start) // 3
+        zones = {
+            "far" : (y_start, y_start + zone_h),
+            "mid" : (y_start + zone_h, y_start + 2 * zone_h),
+            "near" : (y_start + 2 * zone_h, img_h)
+        }
+        densities = {}
 
-        def density(zone) :
-            return np.count_nonzero(zone) / zone.size
+        # -------------------------------------------------
+        # 6. Compute density per zone
+        # -------------------------------------------------
 
-        density_near = density(zone_near)
-        density_mid = density(zone_mid)
-        density_far = density(zone_far)
+        for zone_name, (y1, y2) in zones.items() :
 
-        # weighted combination
+            # Create road mask for zone
+            zone_mask = np.ones((y2 - y1, img_w), dtype = np.uint8) * 255
+
+            # Remove large vehicle areas from road mask
+            for (bx1, by1, bx2, by2) in large_boxes :
+                inter_y1 = max(y1, by1) - y1
+                inter_y2 = min(y2, by2) - y1
+
+                if inter_y1 < inter_y2 :
+                    cv2.rectangle(zone_mask, (bx1, inter_y1), (bx2, inter_y2), 0, -1)
+
+            # Actual road area
+            actual_road_area = cv2.countNonZero(zone_mask)
+
+            # Edge pixels in zone
+            zone_edges = closed_edges[y1 : y2, 0 : img_w]
+            white_pixels = cv2.countNonZero(zone_edges)
+            if actual_road_area > 0 :
+                density = white_pixels / actual_road_area
+            else :
+                density = 0
+            densities[zone_name] = density
+
+        # -------------------------------------------------
+        # 7. Weighted density combination
+        # -------------------------------------------------
+
         density_ratio = (
-            0.5 * density_near +
-            0.3 * density_mid +
-            0.2 * density_far
+            0.5 * densities["near"] +
+            0.3 * densities["mid"] +
+            0.2 * densities["far"]
         )
 
         return density_ratio
@@ -145,7 +218,7 @@ class TrafficDetector :
         for vehicle_type, count in counts.items() :
             weighted_score += count * self.vehicle_weights[vehicle_type]
 
-        density_ratio = self._compute_edge_density(image)
+        density_ratio = self._compute_edge_density(image, boxes)
 
         return {
             "vehicle_count"             : vehicle_count,
