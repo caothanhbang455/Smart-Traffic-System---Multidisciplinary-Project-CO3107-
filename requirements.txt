@@ -4,3 +4,4 @@ ultralytics
 matplotlib
 torch
 torchvision
+python-dotenv

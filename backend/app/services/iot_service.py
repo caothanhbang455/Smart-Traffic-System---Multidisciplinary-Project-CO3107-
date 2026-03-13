@@ -2,12 +2,26 @@
 import paho.mqtt.client as mqtt
 import json
 #from app.config import ADAFRUIT_IO_USERNAME, ADAFRUIT_IO_KEY
-
+# from app.config import *
 # Cấu hình các Feed
 import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+
+env_path = Path(__file__).resolve().parents[2] / ".env"
+load_dotenv(env_path)
 
 ADAFRUIT_AIO_USERNAME = os.getenv("ADAFRUIT_AIO_USERNAME")
 ADAFRUIT_AIO_KEY = os.getenv("ADAFRUIT_AIO_KEY")
+
+FEED_CONTROL = f"{ADAFRUIT_AIO_USERNAME}/feeds/dadn.light-sensor"
+# FEED_CONTROL = f"{ADAFRUIT_AIO_USERNAME}/feeds/dadn.humid-sensor"
+FEED_A_RED = f"{ADAFRUIT_AIO_USERNAME}/feeds/dadn.led-1"
+FEED_A_GREEN = f"{ADAFRUIT_AIO_USERNAME}/feeds/dadn.led-2"
+FEED_B_RED = f"{ADAFRUIT_AIO_USERNAME}/feeds/dadn.led-3"
+FEED_B_GREEN = f"{ADAFRUIT_AIO_USERNAME}/feeds/dadn.led-4"
+
 
 class IOTService:
     def __init__(self):
@@ -81,14 +95,16 @@ def mock_decision_logic(vehicle_a, vehicle_b):
 import time
 
 if __name__ == "__main__":
+    print("username use os",os.getenv("ADAFRUIT_AIO_USERNAME"))
+    print("pass use os",os.getenv("ADAFRUIT_AIO_KEY"))
     iot_service.start()
 
     time.sleep(2)  # chờ MQTT connect
 
     vehicle_count = 15
     state = mock_decision_logic(25, 20)
-    iot_service.send_light_states(state)
+    #iot_service.send_humid_sensor(23)
 
-    # iot_service.send_humid_sensor(30)
+    iot_service.send_light_states(state)
 
     time.sleep(2)  # giữ chương trình sống để nhận message

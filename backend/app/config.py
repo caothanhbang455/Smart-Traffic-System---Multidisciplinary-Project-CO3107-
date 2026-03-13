@@ -1,5 +1,9 @@
 from functools import lru_cache
 from pydantic import AnyHttpUrl, BaseSettings
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class Settings(BaseSettings):
