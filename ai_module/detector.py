@@ -32,7 +32,7 @@ from collections import defaultdict
 
 class TrafficDetector :
 
-    def __init__(self, model_path : str, crop_enabled : bool = False, crop_region : dict = None) :
+    def __init__(self, model_path : str = 'yolov8m.pt', crop_enabled : bool = False, crop_region : dict = None) :
         """
         Initialize the detector.
 
@@ -43,7 +43,12 @@ class TrafficDetector :
         crop_region : dictionary defining crop ratios
         """
 
-        self.model = YOLO(model_path)
+        # Load YOLO model - use default if file not found
+        try:
+            self.model = YOLO(model_path)
+        except Exception as e:
+            print(f"Warning: Could not load {model_path}, using default yolov8n.pt: {e}")
+            self.model = YOLO('yolov8n.pt')  # smaller, faster model
 
         # Vehicle classes considered in traffic analysis
         self.vehicle_classes = [ "bicycle", "motorcycle", "car", "bus", "truck"]

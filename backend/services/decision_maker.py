@@ -16,7 +16,7 @@ Enhancements implemented
 2. Green duration stabilization (anti-oscillation)
 """
 
-from backend.models.traffic_state import TrafficState
+from models.traffic_state import TrafficState
 
 
 class DecisionMaker :

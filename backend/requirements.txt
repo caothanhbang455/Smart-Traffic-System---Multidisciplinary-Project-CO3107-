@@ -18,6 +18,9 @@ Jinja2==3.1.6
 MarkupSafe==3.0.3
 paho-mqtt==2.1.0
 pydantic==2.12.5
+opencv-python
+numpy
+ultralytics
 pydantic-settings==2.13.1
 pydantic_core==2.41.5
 python-dotenv==1.2.1
