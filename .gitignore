@@ -30,7 +30,5 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.env
+backend/.env
 
-# Python env files
-.env
