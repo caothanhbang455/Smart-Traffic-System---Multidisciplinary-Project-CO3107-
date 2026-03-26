@@ -92,19 +92,19 @@ def mock_decision_logic(vehicle_a, vehicle_b):
         return (1,0,0,1)
     
 
-import time
+# import time
 
-if __name__ == "__main__":
-    print("username use os",os.getenv("ADAFRUIT_AIO_USERNAME"))
-    print("pass use os",os.getenv("ADAFRUIT_AIO_KEY"))
-    iot_service.start()
+# if __name__ == "__main__":
+#     print("username use os",os.getenv("ADAFRUIT_AIO_USERNAME"))
+#     print("pass use os",os.getenv("ADAFRUIT_AIO_KEY"))
+#     iot_service.start()
 
-    time.sleep(2)  # chờ MQTT connect
+#     time.sleep(2)  # chờ MQTT connect
 
-    vehicle_count = 15
-    state = mock_decision_logic(25, 20)
-    #iot_service.send_humid_sensor(23)
+#     vehicle_count = 15
+#     state = mock_decision_logic(25, 20)
+#     #iot_service.send_humid_sensor(23)
 
-    iot_service.send_light_states(state)
+#     iot_service.send_light_states(state)
 
-    time.sleep(2)  # giữ chương trình sống để nhận message
+#     time.sleep(2)  # giữ chương trình sống để nhận message
