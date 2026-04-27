@@ -160,7 +160,7 @@ def _publish_light_states(light_states: dict) -> None:
 
 # Module-level singleton – persists smoothing state across requests.
 # Rebuilt when system params change via PUT /api/system_params.
-_engine = _build_engine()
+_engine = _init_engine()
 
 
 def _run_decision(traffic_state : TrafficState) -> dict :
