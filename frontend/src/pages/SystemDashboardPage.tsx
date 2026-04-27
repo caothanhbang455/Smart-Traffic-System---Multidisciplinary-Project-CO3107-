@@ -104,14 +104,14 @@ export function SystemDashboardPage() {
       {/* Page header */}
       <div style={{ marginBottom: 24 }}>
         <h2 style={{ fontSize: 20, fontWeight: 500, color: 'rgba(255,255,255,0.92)', margin: 0, marginBottom: 4 }}>
-          View System Dashboard
+          System Dashboard
         </h2>
         <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', margin: 0 }}>
           Monitor real-time traffic conditions and system status.
         </p>
       </div>
 
-      {/* ── Card 1: Signal Status ── */}
+      {/* -- Card 1: Signal Status -- */}
       <SectionCard title="SIGNAL STATUS" subtitle="Current phase and light states · auto-refresh every 3s">
         {!traffic ? (
           <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)' }}>Connecting to backend...</div>
@@ -138,10 +138,10 @@ export function SystemDashboardPage() {
               </div>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.85)' }}>
-                  {phase === 'NS' ? 'North & South' : 'East & West'} — GREEN phase active
+                  {phase === 'NS' ? 'North & South' : 'East & West'} - GREEN phase active
                 </div>
                 <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>
-                  Last updated: {traffic.intersection_1.last_update || '—'}
+                  Last updated: {traffic.intersection_1.last_update || '-'}
                 </div>
               </div>
             </div>
@@ -179,7 +179,7 @@ export function SystemDashboardPage() {
         )}
       </SectionCard>
 
-      {/* ── Card 2: Traffic Summary ── */}
+      {/* - Card 2: Traffic Summary - */}
       <SectionCard title="TRAFFIC SUMMARY" subtitle="Vehicle counts from API · auto-refresh every 3s">
         {!traffic ? (
           <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)' }}>Waiting for data...</div>

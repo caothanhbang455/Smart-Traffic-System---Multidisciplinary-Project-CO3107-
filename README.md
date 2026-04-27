@@ -1,66 +1,66 @@
 # Smart Traffic System (CO3107)
 
-Smart Traffic System la he thong dieu khien den giao thong thong minh, ket hop:
+A smart traffic light control system that combines:
 
-- AI vehicle detection (YOLO)
-- Decision making cho pha den NS/EW
-- IoT sensor va dieu khien den (Adafruit IO + MQTT)
-- Dashboard frontend (React + Vite)
-- MongoDB Atlas de luu sensor history
+- AI vehicle detection (YOLOv8)
+- Traffic phase decision making (NS/EW)
+- IoT sensors and light control (Adafruit IO + MQTT)
+- Frontend dashboard (React + Vite)
+- MongoDB Atlas for sensor history storage
 
-## 1. Kien truc thu muc
+## 1. Directory Structure
 
 ```text
 Smart-Traffic-System---Multidisciplinary-Project-CO3107-/
 |- backend/        # Flask API + MQTT + MongoDB
 |- frontend/       # React + TypeScript + Vite dashboard
-|- ai_module/      # Detector va logic AI
-|- data/           # Anh test, log data
-|- iot/            # Firmware ESP32
-|- yolov8m.pt      # Model su dung cho detector
+|- ai_module/      # Detector and AI logic
+|- data/           # Test images, log data
+|- iot/            # ESP32 firmware
+|- yolov8m.pt      # Model used by the detector
 ```
 
-## 2. Cong nghe chinh
+## 2. Main Technologies
 
-- Backend: Flask, Flask-MQTT, PyMongo, OpenCV, Ultralytics
-- Frontend: React 19, TypeScript, Vite, Axios
-- Database: MongoDB Atlas
-- IoT: Adafruit IO (MQTT)
+- **Backend:** Flask, PyMongo, OpenCV, Ultralytics
+- **Frontend:** React 19, TypeScript, Vite, Axios
+- **Database:** MongoDB Atlas
+- **IoT:** Adafruit IO (MQTT)
 
-## 3. Yeu cau moi truong
+## 3. Prerequisites
 
 - Python 3.10+
 - Node.js 18+
 - npm
-- Tai khoan MongoDB Atlas
-- Tai khoan Adafruit IO
+- MongoDB Atlas account
+- Adafruit IO account
 
-## 3.1 Quy uoc requirements
+### 3.1 Requirements Convention
 
-- Chi dung 1 file duy nhat: `requirements.txt` o root.
+A single `requirements.txt` file is used at the project root.
 
-Khuyen nghi install:
+Recommended installation:
 
-- Neu chay backend: `pip install -r requirements.txt` tu root hoac `pip install -r ../requirements.txt` trong `backend/`
-- Neu chay script AI doc lap: cung dung `pip install -r requirements.txt` tu root
+- Running the backend: `pip install -r requirements.txt` from root, or `pip install -r ../requirements.txt` inside `backend/`
+- Running standalone AI scripts: same `pip install -r requirements.txt` from root
 
-## 4. Backend setup
+## 4. Backend Setup
 
-Di chuyen vao backend:
+Navigate to the backend directory:
 
 ```bash
 cd backend
 ```
 
-Cai dependencies:
+Install dependencies:
 
 ```bash
 pip install -r ../requirements.txt
 ```
 
-### 4.1 Tao file .env trong backend
+### 4.1 Create the .env file
 
-Tao file `backend/.env` voi noi dung mau:
+Create `backend/.env` with the following content:
 
 ```env
 MONGODB_URI=mongodb+srv://<user>:<password>@<cluster-url>/traffic_system?retryWrites=true&w=majority&appName=Cluster0
@@ -71,77 +71,81 @@ ADAFRUIT_AIO_USERNAME=<your_adafruit_username>
 ADAFRUIT_AIO_KEY=<your_adafruit_key>
 ```
 
-Luu y:
+Notes:
 
-- Khong commit `.env`
-- Neu password Mongo co ky tu dac biet, can URL encode
+- Do not commit `.env` to the repository
+- If the MongoDB password contains special characters, URL-encode them
 
-### 4.2 Kiem tra ket noi MongoDB Atlas
+### 4.2 Verify MongoDB Atlas Connection
 
 ```bash
 python -c "from app.database import check_mongodb_connection; ok, err = check_mongodb_connection(); print('MongoDB OK' if ok else f'MongoDB FAIL: {err}')"
 ```
 
-### 4.3 Chay backend
+### 4.3 Run the Backend
 
 ```bash
 python -m app.main
 ```
 
-Mac dinh backend chay tai:
+The backend runs at:
 
-```text
+```
 http://127.0.0.1:5000
 ```
 
-## 5. Frontend setup
+## 5. Frontend Setup
 
-Di chuyen vao frontend:
+Navigate to the frontend directory:
 
 ```bash
 cd frontend
 ```
 
-Cai packages:
+Install packages:
 
 ```bash
 npm install
 ```
 
-Tao `frontend/.env` (neu can doi URL backend):
+Create `frontend/.env` (if you need to change the backend URL):
 
 ```env
 VITE_BACKEND_URL=http://127.0.0.1:5000
 ```
 
-Chay frontend:
+Start the frontend:
 
 ```bash
 npm run dev
 ```
 
-## 6. Luong chinh
+## 6. Main Flow
 
-1. Upload 4 anh (north/south/east/west) tu frontend
-2. Backend goi AI detector
-3. AI tra vehicle metrics + anh annotated (co bounding box)
-4. Backend lay sensor data IoT (co fallback neu IoT chua co data)
-5. Backend chay decision maker, publish den qua MQTT
-6. Backend luu sensor history vao MongoDB Atlas
-7. Frontend hien thi ket qua decision + bbox + 20 sensor records moi nhat
+1. Upload 4 images (north / south / east / west) from the frontend
+2. Backend calls the AI detector
+3. AI returns vehicle metrics and annotated images (with bounding boxes)
+4. Backend retrieves IoT sensor data (with fallback if IoT data is unavailable)
+5. Backend runs the decision maker and sends light commands via MQTT to Adafruit IO
+6. Backend saves sensor history to MongoDB Atlas
+7. Frontend displays the decision result, bounding boxes, and the 20 most recent sensor records
 
-## 7. API chinh
+## 7. API Endpoints
 
-- `GET /api/traffic`
-- `GET /api/system_params`
-- `PUT /api/system_params`
-- `POST /api/control`
-- `POST /api/manual_control`
-- `POST /api/analyze_images`
-- `POST /api/run_decision_with_images`
-- `GET /api/sensor_history?limit=20`
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/traffic` | Current traffic light state |
+| GET | `/api/system_params` | Read system parameters |
+| PUT | `/api/system_params` | Update system parameters |
+| POST | `/api/control` | Manually set a single intersection light |
+| POST | `/api/manual_control` | Manual override for both intersections |
+| POST | `/api/analyze_images` | AI analysis only (no decision) |
+| POST | `/api/run_decision_with_images` | Full pipeline: AI → decision → IoT |
+| GET | `/api/sensor_history?limit=20` | Recent sensor history records |
 
-## 8. Test nhanh API decision (PowerShell)
+## 8. Quick API Test (PowerShell)
+
+**Decision pipeline:**
 
 ```powershell
 $uri = "http://127.0.0.1:5000/api/run_decision_with_images"
@@ -157,7 +161,7 @@ $res = Invoke-RestMethod -Method Post -Uri $uri -Form $form
 $res | ConvertTo-Json -Depth 10
 ```
 
-## 9. Test nhanh sensor history
+**Sensor history:**
 
 ```powershell
 $uri = "http://127.0.0.1:5000/api/sensor_history?limit=20"
@@ -165,8 +169,8 @@ $res = Invoke-RestMethod -Method Get -Uri $uri
 $res | ConvertTo-Json -Depth 10
 ```
 
-## 10. Ghi chu bao mat
+## 9. Security Notes
 
-- Da tung co truong hop lo Mongo password trong terminal/chat. Hay rotate password Atlas neu can.
-- Whitelist IP trong Mongo Atlas dung muc dich dev/test, tranh mo rong 0.0.0.0/0 khi khong can thiet.
-- Khong commit thong tin nhay cam vao repo (`.env`, API keys).
+- If MongoDB credentials were ever exposed in a terminal or chat, rotate the Atlas password immediately.
+- Restrict IP whitelisting in MongoDB Atlas to specific addresses for dev/test; avoid leaving `0.0.0.0/0` open when not needed.
+- Never commit sensitive information to the repository (`.env` files, API keys).

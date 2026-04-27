@@ -1,51 +1,53 @@
 # Frontend Dashboard (React + TypeScript + Vite)
 
-Dashboard frontend cho Smart Traffic System.
+Frontend dashboard for the Smart Traffic System.
 
-## 1) Cai dat
+## 1) Installation
 
 ```bash
 cd frontend
 npm install
 ```
 
-## 2) Cau hinh backend URL
+## 2) Configure Backend URL
 
-Tao file `.env` trong `frontend/`:
+Create a `.env` file inside `frontend/`:
 
 ```env
 VITE_BACKEND_URL=http://127.0.0.1:5000
 ```
 
-Neu khong tao `.env`, app se mac dinh goi `http://127.0.0.1:5000`.
+If `.env` is not created, the app defaults to calling `http://127.0.0.1:5000`.
 
-## 3) Chay dev
+## 3) Run Development Server
 
 ```bash
 npm run dev
 ```
 
-## 4) Build production
+## 4) Production Build
 
 ```bash
 npm run build
 npm run preview
 ```
 
-## 5) Tinh nang hien co
+## 5) Current Features
 
-- Upload 4 anh giao lo (north/south/east/west)
-- Goi API decision backend
-- Hien thi ket qua phase NS/EW
-- Hien thi anh bounding box sau khi AI detect
-- Hien thi sensor history (latest 20) lay tu MongoDB API
-- Manual control cho den giao thong
+- Upload 4 intersection images (north / south / east / west)
+- Call the backend decision API
+- Display the winning phase result (NS / EW)
+- Display annotated images with AI bounding boxes
+- Display sensor history (latest 20 records) fetched from the MongoDB API
+- Manual traffic light control override
 
-## 6) API frontend dang su dung
+## 6) API Endpoints Used by the Frontend
 
-- `POST /api/run_decision_with_images`
-- `GET /api/traffic`
-- `POST /api/manual_control`
-- `GET /api/system_params`
-- `PUT /api/system_params`
-- `GET /api/sensor_history?limit=20`
+| Method | Endpoint |
+|--------|----------|
+| POST | `/api/run_decision_with_images` |
+| GET | `/api/traffic` |
+| POST | `/api/manual_control` |
+| GET | `/api/system_params` |
+| PUT | `/api/system_params` |
+| GET | `/api/sensor_history?limit=20` |

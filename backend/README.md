@@ -1,20 +1,20 @@
 # Backend Guide (Flask + AI + IoT + MongoDB)
 
-## 1) Cai dat
+## 1) Installation
 
 ```bash
 cd backend
 pip install -r ../requirements.txt
 ```
 
-Note:
+Notes:
 
-- Chi con 1 file dependency duy nhat: `requirements.txt` o root.
-- Khi dang o `backend/`, hay install bang `pip install -r ../requirements.txt`.
+- There is a single dependency file: `requirements.txt` at the project root.
+- When inside `backend/`, install with `pip install -r ../requirements.txt`.
 
-## 2) Cau hinh .env
+## 2) Configure .env
 
-Tao `backend/.env`:
+Create `backend/.env`:
 
 ```env
 MONGODB_URI=mongodb+srv://<user>:<password>@<cluster-url>/traffic_system?retryWrites=true&w=majority&appName=Cluster0
@@ -25,38 +25,40 @@ ADAFRUIT_AIO_USERNAME=<your_adafruit_username>
 ADAFRUIT_AIO_KEY=<your_adafruit_key>
 ```
 
-## 3) Kiem tra MongoDB Atlas
+## 3) Verify MongoDB Atlas Connection
 
 ```bash
 python -c "from app.database import check_mongodb_connection; ok, err = check_mongodb_connection(); print('MongoDB OK' if ok else f'MongoDB FAIL: {err}')"
 ```
 
-## 4) Kiem tra luu sensor history
+## 4) Verify Sensor History Saving
 
 ```bash
 python -c "from app.services.history_service import save_sensor_history; print(save_sensor_history(123.4, 29.1, 'manual-test'))"
 ```
 
-## 5) Chay backend
+## 5) Run the Backend
 
 ```bash
 python -m app.main
 ```
 
-Server default: `http://127.0.0.1:5000`
+Default server address: `http://127.0.0.1:5000`
 
-## 6) API chinh
+## 6) API Endpoints
 
-- `GET /api/traffic`
-- `GET /api/system_params`
-- `PUT /api/system_params`
-- `POST /api/control`
-- `POST /api/manual_control`
-- `POST /api/analyze_images`
-- `POST /api/run_decision_with_images`
-- `GET /api/sensor_history?limit=20`
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/traffic` | Current traffic light state |
+| GET | `/api/system_params` | Read system parameters |
+| PUT | `/api/system_params` | Update system parameters |
+| POST | `/api/control` | Manually set a single intersection light |
+| POST | `/api/manual_control` | Manual override for both intersections |
+| POST | `/api/analyze_images` | AI analysis only (no decision) |
+| POST | `/api/run_decision_with_images` | Full pipeline: AI → decision → IoT |
+| GET | `/api/sensor_history?limit=20` | Recent sensor history records |
 
-## 7) Test decision API
+## 7) Test Decision API
 
 PowerShell:
 
@@ -74,7 +76,7 @@ $res = Invoke-RestMethod -Method Post -Uri $uri -Form $form
 $res | ConvertTo-Json -Depth 10
 ```
 
-## 8) Test sensor history API
+## 8) Test Sensor History API
 
 ```powershell
 $uri = "http://127.0.0.1:5000/api/sensor_history?limit=20"
@@ -82,8 +84,8 @@ $res = Invoke-RestMethod -Method Get -Uri $uri
 $res | ConvertTo-Json -Depth 10
 ```
 
-## 9) Luu y van hanh
+## 9) Operational Notes
 
-- `run_decision_with_images` co co che fallback sensor khi IoT chua tra data kip.
-- Sensor history se luu vao MongoDB voi source theo luong run.
-- Khong commit file `.env`.
+- `run_decision_with_images` has a sensor fallback mechanism when IoT data is not yet available.
+- Sensor history is saved to MongoDB with a source identifier that reflects the data flow path.
+- Never commit the `.env` file to the repository.

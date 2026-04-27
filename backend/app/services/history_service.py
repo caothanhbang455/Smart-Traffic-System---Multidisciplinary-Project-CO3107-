@@ -6,7 +6,7 @@ def save_sensor_history(light_intensity: int, temperature: float, source = "iot"
     """
     INPUT:
         - light_intensity: số (int/float/string có thể convert) → độ sáng
-        - temperature: số → nhiệt độ
+        - temperature: số -> nhiệt độ
         - source: string (mặc định = "iot") → nguồn dữ liệu
 
     OUTPUT:

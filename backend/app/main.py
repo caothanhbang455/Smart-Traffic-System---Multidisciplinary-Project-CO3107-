@@ -2,7 +2,6 @@
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from flask_mqtt import Mqtt
 import json
 import os
 import time
@@ -23,18 +22,8 @@ CORS(app)
 iot_service = IOTService()
 iot_service.start()
 
-# ==================== CẤU HÌNH MQTT ====================
-app.config['MQTT_BROKER_URL'] = 'test.mosquitto.org'
-app.config['MQTT_BROKER_PORT'] = 1883
-app.config['MQTT_USERNAME'] = ''
-app.config['MQTT_PASSWORD'] = ''
-app.config['MQTT_KEEPALIVE'] = 60
-app.config['MQTT_TLS_ENABLED'] = False
-
-mqtt = Mqtt(app)
-
 # ==================== SYSTEM PARAMS ====================
-SYSTEM_PARAMS_FILE       = os.path.join(os.path.dirname(__file__), "system_params.json")
+SYSTEM_PARAMS_FILE = os.path.join(os.path.dirname(__file__), "system_params.json")
 SYSTEM_PARAMS_AUDIT_FILE = os.path.join(os.path.dirname(__file__), "system_params_audit.log")
 
 DEFAULT_SYSTEM_PARAMS = {
@@ -61,8 +50,8 @@ def _merge_system_params(raw: dict | None) -> dict:
     raw = raw or {}
     weights = raw.get("vehicle_weights", {})
     return {
-        "alpha":          float(raw.get("alpha",          DEFAULT_SYSTEM_PARAMS["alpha"])),
-        "beta":           float(raw.get("beta",           DEFAULT_SYSTEM_PARAMS["beta"])),
+        "alpha": float(raw.get("alpha", DEFAULT_SYSTEM_PARAMS["alpha"])),
+        "beta": float(raw.get("beta", DEFAULT_SYSTEM_PARAMS["beta"])),
         "base_green_time": float(raw.get("base_green_time", DEFAULT_SYSTEM_PARAMS["base_green_time"])),
         "vehicle_weights": {
             k: float(weights.get(k, v))
@@ -97,9 +86,9 @@ def _validate_system_params(params: dict) -> list[str]:
     base_green_time trong [5, 180], weights trong [0, 20]
     => trả về danh sách lỗi."""
     errors = []
-    alpha   = float(params.get("alpha", 0))
-    beta    = float(params.get("beta", 0))
-    base    = float(params.get("base_green_time", 0))
+    alpha = float(params.get("alpha", 0))
+    beta = float(params.get("beta", 0))
+    base = float(params.get("base_green_time", 0))
     weights = params.get("vehicle_weights", {})
 
     if alpha < 0 or beta < 0:
@@ -129,14 +118,24 @@ def _write_audit(before: dict, after: dict, actor: str) -> None:
 
 # ==================== HELPERS ====================
 
-def _build_engine() -> DecisionMaker:
-    """Đọc params từ JSON => tạo và trả về 1 instance DecisionMaker mới."""
+def _init_engine() -> DecisionMaker:
+    """Đọc params từ system_params.json và tạo instance DecisionMaker duy nhất cho toàn app."""
     params = _load_system_params()
     return DecisionMaker(
         alpha=float(params["alpha"]),
         beta=float(params["beta"]),
         base_time=float(params["base_green_time"]),
     )
+
+# Singeton Engine
+_engine = _init_engine()
+
+
+def _update_engine_params(params: dict) -> None:
+    """Cập nhật alpha, beta, base_green_time trực tiếp lên engine đang chạy mà không reset smoothing state."""
+    _engine.alpha = float(params["alpha"])
+    _engine.beta = float(params["beta"])
+    _engine.base_time = float(params["base_green_time"])
 
 
 def _direction_from_ai(ai_data: dict) -> DirectionState:
@@ -150,15 +149,13 @@ def _direction_from_ai(ai_data: dict) -> DirectionState:
 
 
 def _publish_light_states(light_states: dict) -> None:
-    """Cập nhật traffic_data và gửi lệnh MQTT cho IoT."""
+    """Cập nhật traffic_data in-memory."""
     global traffic_data
     traffic_data["intersection_1"]["light"] = light_states["north"]
     traffic_data["intersection_2"]["light"] = light_states["east"]
     now = datetime.now().strftime("%H:%M:%S")
     traffic_data["intersection_1"]["last_update"] = now
     traffic_data["intersection_2"]["last_update"] = now
-    mqtt.publish('traffic/intersection_1/command', json.dumps({"light": light_states["north"]}))
-    mqtt.publish('traffic/intersection_2/command', json.dumps({"light": light_states["east"]}))
 
 
 # Module-level singleton – persists smoothing state across requests.
@@ -209,34 +206,11 @@ def _get_light_states(winner_phase: str) -> dict:
     else:
         return {"north": "red",   "south": "red",   "east": "green", "west": "green"}
 
-# ==================== MQTT CALLBACKS ====================
-
-@mqtt.on_connect()
-def handle_connect(client, userdata, flags, rc):
-    print("Connected to MQTT!")
-    mqtt.subscribe('traffic/#')
-
-
-@mqtt.on_message()
-def handle_mqtt_message(client, userdata, message):
-    if 'command' in message.topic:
-        return
-    try:
-        data  = json.loads(message.payload.decode())
-        inter = data.get("intersection", "intersection_1")
-        traffic_data[inter] = {
-            "vehicles":    data.get("vehicles", 0),
-            "light":       data.get("light", "red"),
-            "last_update": datetime.now().strftime("%H:%M:%S"),
-        }
-    except Exception:
-        pass
-
-
 # ==================== API ROUTES ====================
 
 @app.route('/')
 def home():
+    """Health check - xác nhận backend đang hoạt động."""
     return "Smart Traffic System Backend is running!"
 
 
@@ -282,7 +256,6 @@ def control_light():
         return jsonify({"status": "error", "message": "Intersection not found"}), 400
 
     traffic_data[inter]["light"] = new_light
-    mqtt.publish(f'traffic/{inter}/command', json.dumps({"light": new_light}))
     return jsonify({"status": "success", "message": f"Light at {inter} changed to {new_light}"})
 
 
@@ -397,13 +370,13 @@ def run_decision_with_images():
 
         # In kết quả ra terminal
         print("\n============================== DECISION RESULT ==============================")
-        print(f"Phase winner     : {response['phase']}")
-        print(f"Green duration   : {response['green_duration']}s")
-        print(f"Light states     : {response['light_states']}")
-        print(f"NS duration      : {response['details']['NS']['duration']}s ({response['details']['NS']['color']})")
-        print(f"EW duration      : {response['details']['EW']['duration']}s ({response['details']['EW']['color']})")
-        print(f"Temperature      : {temperature}°C")
-        print(f"Light intensity  : {light_intensity} lux")
+        print(f"Phase winner: {response['phase']}")
+        print(f"Green duration: {response['green_duration']}s")
+        print(f"Light states: {response['light_states']}")
+        print(f"NS duration: {response['details']['NS']['duration']}s ({response['details']['NS']['color']})")
+        print(f"EW duration: {response['details']['EW']['duration']}s ({response['details']['EW']['color']})")
+        print(f"Temperature: {temperature}°C")
+        print(f"Light intensity: {light_intensity} lux")
         print("--- AI Results per direction ---")
         for direction, result in ai_results.items():
             print(f"  {direction.upper():5s} | vehicles: {result.get('vehicle_count', 0):3d} | "
@@ -438,14 +411,13 @@ def manual_control():
                 "message": "Invalid light state"
             }), 400
 
-        # Log để bạn debug
+        # Debug
         print("\n===== MANUAL CONTROL RECEIVED =====")
         print("Override:", override)
         print("Intersection 1:", intersection_1)
         print("Intersection 2:", intersection_2)
         print("===================================\n")
 
-        # Sau này bạn xử lý IoT tại đây
         response_data = {
             "override": override,
             "intersection_1": intersection_1,
@@ -482,6 +454,7 @@ def manual_control():
 
 @app.route('/api/sensor_history', methods=['GET'])
 def get_sensor_history():
+    """Trả về các bản ghi sensor history gần nhất từ MongoDB (tối đa 100, mặc định 20), sắp xếp mới nhất trước."""
     try:
         limit = request.args.get('limit', default=20, type=int)
         if limit <= 0:

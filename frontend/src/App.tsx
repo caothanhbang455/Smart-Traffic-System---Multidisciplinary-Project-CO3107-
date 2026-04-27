@@ -206,7 +206,7 @@ function App() {
           <svg className="st-nav__item-icon" viewBox="0 0 16 16" fill="currentColor">
             <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 2a5 5 0 110 10A5 5 0 018 3zm0 2a1 1 0 00-1 1v2.586l-1.707 1.707a1 1 0 001.414 1.414L8.707 10A1 1 0 009 9.293V8a1 1 0 00-1-1z"/>
           </svg>
-          View System Dashboard
+          System Dashboard
         </button>
 
         <button
@@ -318,7 +318,7 @@ function App() {
                       {decisionLog.length === 0 ? (
                         <div className="st-log__row">
                           <div className="st-log__msg" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                            No decisions yet — upload 4 images and press RUN
+                            No decisions yet - upload 4 images and press RUN
                           </div>
                         </div>
                       ) : (
