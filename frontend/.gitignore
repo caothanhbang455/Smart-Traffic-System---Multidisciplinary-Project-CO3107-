@@ -1,24 +1,56 @@
-# Logs
-logs
+# ── Python ────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.eggs/
+venv/
+.venv/
+env/
+
+# ── Credentials and secrets ───────────────────────────────────────────
+backend/.env
+.env
+*.env
+
+# ── Runtime generated files ───────────────────────────────────────────
+backend/app/system_params_audit.log
+
+# ── Node / Frontend ───────────────────────────────────────────────────
+node_modules/
+dist/
+dist-ssr/
+*.local
+frontend/node_modules/
+frontend/dist/
+
+# ── Logs ──────────────────────────────────────────────────────────────
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
+# ── Editor ────────────────────────────────────────────────────────────
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# ── Jupyter ───────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ── YOLO training output ──────────────────────────────────────────────
+runs/
+
+# ── OS ────────────────────────────────────────────────────────────────
+Thumbs.db
+desktop.ini

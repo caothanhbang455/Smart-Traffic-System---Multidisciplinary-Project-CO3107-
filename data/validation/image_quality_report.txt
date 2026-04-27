@@ -1,0 +1,525 @@
+Image Quality Report – Traffic Detection
+Generated : 2026-04-26 13:37:08
+Folder    : C:\Users\hongp\Downloads\Traffic State Optimization\data/raw
+Images    : 22 found
+
+
+──────────────────────────────────────────────────────────────────────
+  traffic_01.jpg
+──────────────────────────────────────────────────────────────────────
+  CRITICAL
+    width            (min 480px)                  3236px           [PASS]
+    height           (min 360px)                  1903px           [PASS]
+    file size        (min 50KB)                   1465.3KB         [PASS]
+    overexposed      (max 20.0%)                  0.2%             [PASS]
+    underexposed     (max 20.0%)                  0.5%             [PASS]
+  QUALITY
+    brightness       (target 50–200)              109.2            [PASS]
+    contrast         (min 15 std dev)             49.2             [PASS]
+    sharpness        (min 15 Lap.var)             377.3            [PASS]
+    aspect ratio     (0.5–4.0)                    1.7              [PASS]
+  INFORMATIONAL  (context only – not counted in verdict)
+    noise ratio      (0 = clean, 1 = noisy)       0.674
+    saturation       (HSV S mean)                 51.1
+    channel balance  (RGB std dev)                2.1
+    resolution                                    3236×1903  6.16MP
+
+  ► GOOD
+
+──────────────────────────────────────────────────────────────────────
+  traffic_02.jpg
+──────────────────────────────────────────────────────────────────────
+  CRITICAL
+    width            (min 480px)                  1200px           [PASS]
+    height           (min 360px)                  720px            [PASS]
+    file size        (min 50KB)                   420.3KB          [PASS]
+    overexposed      (max 20.0%)                  0.8%             [PASS]
+    underexposed     (max 20.0%)                  1.0%             [PASS]
+  QUALITY
+    brightness       (target 50–200)              115.4            [PASS]
+    contrast         (min 15 std dev)             58.9             [PASS]
+    sharpness        (min 15 Lap.var)             5881.1           [PASS]
+    aspect ratio     (0.5–4.0)                    1.67             [PASS]
+  INFORMATIONAL  (context only – not counted in verdict)
+    noise ratio      (0 = clean, 1 = noisy)       0.564
+    saturation       (HSV S mean)                 28.2
+    channel balance  (RGB std dev)                2.0
+    resolution                                    1200×720  0.86MP
+
+  ► GOOD
+
+──────────────────────────────────────────────────────────────────────
+  traffic_03.jpg
+──────────────────────────────────────────────────────────────────────
+  CRITICAL
+    width            (min 480px)                  1000px           [PASS]
+    height           (min 360px)                  643px            [PASS]
+    file size        (min 50KB)                   274.4KB          [PASS]
+    overexposed      (max 20.0%)                  0.7%             [PASS]
+    underexposed     (max 20.0%)                  1.5%             [PASS]
+  QUALITY
+    brightness       (target 50–200)              136.7            [PASS]
+    contrast         (min 15 std dev)             65.5             [PASS]
+    sharpness        (min 15 Lap.var)             2351.0           [PASS]
+    aspect ratio     (0.5–4.0)                    1.56             [PASS]
+  INFORMATIONAL  (context only – not counted in verdict)
+    noise ratio      (0 = clean, 1 = noisy)       0.467
+    saturation       (HSV S mean)                 62.7
+    channel balance  (RGB std dev)                2.1
+    resolution                                    1000×643  0.64MP
+
+  ► GOOD
+
+──────────────────────────────────────────────────────────────────────
+  traffic_04.jpg
+──────────────────────────────────────────────────────────────────────
+  CRITICAL
+    width            (min 480px)                  1500px           [PASS]
+    height           (min 360px)                  1002px           [PASS]
+    file size        (min 50KB)                   1145.6KB         [PASS]
+    overexposed      (max 20.0%)                  18.4%            [WARN]
+    underexposed     (max 20.0%)                  0.0%             [PASS]
+  QUALITY
+    brightness       (target 50–200)              172.8            [PASS]
+    contrast         (min 15 std dev)             74.7             [PASS]
+    sharpness        (min 15 Lap.var)             1929.1           [PASS]
+    aspect ratio     (0.5–4.0)                    1.5              [PASS]
+  INFORMATIONAL  (context only – not counted in verdict)
+    noise ratio      (0 = clean, 1 = noisy)       0.312
+    saturation       (HSV S mean)                 51.1
+    channel balance  (RGB std dev)                5.2
+    resolution                                    1500×1002  1.5MP
+
+  ► ACCEPTABLE (1 quality warning)
+
+──────────────────────────────────────────────────────────────────────
+  traffic_05.jpg
+──────────────────────────────────────────────────────────────────────
+  CRITICAL
+    width            (min 480px)                  1500px           [PASS]
+    height           (min 360px)                  1002px           [PASS]
+    file size        (min 50KB)                   493.5KB          [PASS]
+    overexposed      (max 20.0%)                  2.4%             [PASS]
+    underexposed     (max 20.0%)                  0.2%             [PASS]
+  QUALITY
+    brightness       (target 50–200)              127.7            [PASS]
+    contrast         (min 15 std dev)             69.9             [PASS]
+    sharpness        (min 15 Lap.var)             2798.7           [PASS]
+    aspect ratio     (0.5–4.0)                    1.5              [PASS]
+  INFORMATIONAL  (context only – not counted in verdict)
+    noise ratio      (0 = clean, 1 = noisy)       0.388
+    saturation       (HSV S mean)                 74.0
+    channel balance  (RGB std dev)                6.4
+    resolution                                    1500×1002  1.5MP
+
+  ► GOOD
+
+──────────────────────────────────────────────────────────────────────
+  traffic_06.jpg
+──────────────────────────────────────────────────────────────────────
+  CRITICAL
+    width            (min 480px)                  2560px           [PASS]
+    height           (min 360px)                  1707px           [PASS]
+    file size        (min 50KB)                   1284.2KB         [PASS]
+    overexposed      (max 20.0%)                  0.1%             [PASS]
+    underexposed     (max 20.0%)                  0.0%             [PASS]
+  QUALITY
+    brightness       (target 50–200)              149.1            [PASS]
+    contrast         (min 15 std dev)             71.7             [PASS]
+    sharpness        (min 15 Lap.var)             341.4            [PASS]
+    aspect ratio     (0.5–4.0)                    1.5              [PASS]
+  INFORMATIONAL  (context only – not counted in verdict)
+    noise ratio      (0 = clean, 1 = noisy)       0.63
+    saturation       (HSV S mean)                 35.1
+    channel balance  (RGB std dev)                0.8
+    resolution                                    2560×1707  4.37MP
+
+  ► GOOD
+
+──────────────────────────────────────────────────────────────────────
+  traffic_07.jpg
+──────────────────────────────────────────────────────────────────────
+  CRITICAL
+    width            (min 480px)                  2000px           [PASS]
+    height           (min 360px)                  1333px           [PASS]
+    file size        (min 50KB)                   1298.1KB         [PASS]
+    overexposed      (max 20.0%)                  0.8%             [PASS]
+    underexposed     (max 20.0%)                  0.7%             [PASS]
+  QUALITY
+    brightness       (target 50–200)              123.1            [PASS]
+    contrast         (min 15 std dev)             68.9             [PASS]
+    sharpness        (min 15 Lap.var)             6319.5           [PASS]
+    aspect ratio     (0.5–4.0)                    1.5              [PASS]
+  INFORMATIONAL  (context only – not counted in verdict)
+    noise ratio      (0 = clean, 1 = noisy)       0.387
+    saturation       (HSV S mean)                 46.5
+    channel balance  (RGB std dev)                0.9
+    resolution                                    2000×1333  2.67MP
+
+  ► GOOD
+
+──────────────────────────────────────────────────────────────────────
+  traffic_08.jpg
+──────────────────────────────────────────────────────────────────────
+  CRITICAL
+    width            (min 480px)                  2000px           [PASS]
+    height           (min 360px)                  1256px           [PASS]
+    file size        (min 50KB)                   2337.2KB         [PASS]
+    overexposed      (max 20.0%)                  1.1%             [PASS]
+    underexposed     (max 20.0%)                  0.6%             [PASS]
+  QUALITY
+    brightness       (target 50–200)              120.1            [PASS]
+    contrast         (min 15 std dev)             62.8             [PASS]
+    sharpness        (min 15 Lap.var)             2202.2           [PASS]
+    aspect ratio     (0.5–4.0)                    1.59             [PASS]
+  INFORMATIONAL  (context only – not counted in verdict)
+    noise ratio      (0 = clean, 1 = noisy)       0.633
+    saturation       (HSV S mean)                 46.9
+    channel balance  (RGB std dev)                4.2
+    resolution                                    2000×1256  2.51MP
+
+  ► GOOD
+
+──────────────────────────────────────────────────────────────────────
+  traffic_09.jpg
+──────────────────────────────────────────────────────────────────────
+  CRITICAL
+    width            (min 480px)                  2560px           [PASS]
+    height           (min 360px)                  1536px           [PASS]
+    file size        (min 50KB)                   1244.2KB         [PASS]
+    overexposed      (max 20.0%)                  0.3%             [PASS]
+    underexposed     (max 20.0%)                  0.1%             [PASS]
+  QUALITY
+    brightness       (target 50–200)              101.2            [PASS]
+    contrast         (min 15 std dev)             52.9             [PASS]
+    sharpness        (min 15 Lap.var)             623.3            [PASS]
+    aspect ratio     (0.5–4.0)                    1.67             [PASS]
+  INFORMATIONAL  (context only – not counted in verdict)
+    noise ratio      (0 = clean, 1 = noisy)       0.578
+    saturation       (HSV S mean)                 42.7
+    channel balance  (RGB std dev)                2.2
+    resolution                                    2560×1536  3.93MP
+
+  ► GOOD
+
+──────────────────────────────────────────────────────────────────────
+  traffic_10.jpg
+──────────────────────────────────────────────────────────────────────
+  CRITICAL
+    width            (min 480px)                  1357px           [PASS]
+    height           (min 360px)                  852px            [PASS]
+    file size        (min 50KB)                   165.5KB          [PASS]
+    overexposed      (max 20.0%)                  0.1%             [PASS]
+    underexposed     (max 20.0%)                  0.1%             [PASS]
+  QUALITY
+    brightness       (target 50–200)              100.9            [PASS]
+    contrast         (min 15 std dev)             44.4             [PASS]
+    sharpness        (min 15 Lap.var)             1150.3           [PASS]
+    aspect ratio     (0.5–4.0)                    1.59             [PASS]
+  INFORMATIONAL  (context only – not counted in verdict)
+    noise ratio      (0 = clean, 1 = noisy)       0.438
+    saturation       (HSV S mean)                 29.3
+    channel balance  (RGB std dev)                0.9
+    resolution                                    1357×852  1.16MP
+
+  ► GOOD
+
+──────────────────────────────────────────────────────────────────────
+  traffic_11.jpg
+──────────────────────────────────────────────────────────────────────
+  CRITICAL
+    width            (min 480px)                  1200px           [PASS]
+    height           (min 360px)                  750px            [PASS]
+    file size        (min 50KB)                   365.8KB          [PASS]
+    overexposed      (max 20.0%)                  0.2%             [PASS]
+    underexposed     (max 20.0%)                  0.7%             [PASS]
+  QUALITY
+    brightness       (target 50–200)              114.2            [PASS]
+    contrast         (min 15 std dev)             56.0             [PASS]
+    sharpness        (min 15 Lap.var)             4691.9           [PASS]
+    aspect ratio     (0.5–4.0)                    1.6              [PASS]
+  INFORMATIONAL  (context only – not counted in verdict)
+    noise ratio      (0 = clean, 1 = noisy)       0.261
+    saturation       (HSV S mean)                 104.9
+    channel balance  (RGB std dev)                16.3
+    resolution                                    1200×750  0.9MP
+
+  ► GOOD
+
+──────────────────────────────────────────────────────────────────────
+  traffic_12.jpg
+──────────────────────────────────────────────────────────────────────
+  CRITICAL
+    width            (min 480px)                  2048px           [PASS]
+    height           (min 360px)                  1365px           [PASS]
+    file size        (min 50KB)                   779.5KB          [PASS]
+    overexposed      (max 20.0%)                  1.1%             [PASS]
+    underexposed     (max 20.0%)                  0.0%             [PASS]
+  QUALITY
+    brightness       (target 50–200)              106.4            [PASS]
+    contrast         (min 15 std dev)             50.3             [PASS]
+    sharpness        (min 15 Lap.var)             458.9            [PASS]
+    aspect ratio     (0.5–4.0)                    1.5              [PASS]
+  INFORMATIONAL  (context only – not counted in verdict)
+    noise ratio      (0 = clean, 1 = noisy)       0.755
+    saturation       (HSV S mean)                 36.5
+    channel balance  (RGB std dev)                1.5
+    resolution                                    2048×1365  2.8MP
+
+  ► GOOD
+
+──────────────────────────────────────────────────────────────────────
+  traffic_13.jpg
+──────────────────────────────────────────────────────────────────────
+  CRITICAL
+    width            (min 480px)                  1966px           [PASS]
+    height           (min 360px)                  1311px           [PASS]
+    file size        (min 50KB)                   838.3KB          [PASS]
+    overexposed      (max 20.0%)                  1.0%             [PASS]
+    underexposed     (max 20.0%)                  0.3%             [PASS]
+  QUALITY
+    brightness       (target 50–200)              94.5             [PASS]
+    contrast         (min 15 std dev)             60.0             [PASS]
+    sharpness        (min 15 Lap.var)             2678.0           [PASS]
+    aspect ratio     (0.5–4.0)                    1.5              [PASS]
+  INFORMATIONAL  (context only – not counted in verdict)
+    noise ratio      (0 = clean, 1 = noisy)       0.533
+    saturation       (HSV S mean)                 100.6
+    channel balance  (RGB std dev)                12.4
+    resolution                                    1966×1311  2.58MP
+
+  ► GOOD
+
+──────────────────────────────────────────────────────────────────────
+  traffic_14.jpg
+──────────────────────────────────────────────────────────────────────
+  CRITICAL
+    width            (min 480px)                  1198px           [PASS]
+    height           (min 360px)                  627px            [PASS]
+    file size        (min 50KB)                   238.9KB          [PASS]
+    overexposed      (max 20.0%)                  0.1%             [PASS]
+    underexposed     (max 20.0%)                  0.4%             [PASS]
+  QUALITY
+    brightness       (target 50–200)              94.1             [PASS]
+    contrast         (min 15 std dev)             57.0             [PASS]
+    sharpness        (min 15 Lap.var)             565.3            [PASS]
+    aspect ratio     (0.5–4.0)                    1.91             [PASS]
+  INFORMATIONAL  (context only – not counted in verdict)
+    noise ratio      (0 = clean, 1 = noisy)       0.558
+    saturation       (HSV S mean)                 56.2
+    channel balance  (RGB std dev)                1.8
+    resolution                                    1198×627  0.75MP
+
+  ► GOOD
+
+──────────────────────────────────────────────────────────────────────
+  traffic_15.jpg
+──────────────────────────────────────────────────────────────────────
+  CRITICAL
+    width            (min 480px)                  1920px           [PASS]
+    height           (min 360px)                  1280px           [PASS]
+    file size        (min 50KB)                   644.2KB          [PASS]
+    overexposed      (max 20.0%)                  0.3%             [PASS]
+    underexposed     (max 20.0%)                  0.0%             [PASS]
+  QUALITY
+    brightness       (target 50–200)              105.3            [PASS]
+    contrast         (min 15 std dev)             53.8             [PASS]
+    sharpness        (min 15 Lap.var)             523.2            [PASS]
+    aspect ratio     (0.5–4.0)                    1.5              [PASS]
+  INFORMATIONAL  (context only – not counted in verdict)
+    noise ratio      (0 = clean, 1 = noisy)       0.599
+    saturation       (HSV S mean)                 40.0
+    channel balance  (RGB std dev)                4.2
+    resolution                                    1920×1280  2.46MP
+
+  ► GOOD
+
+──────────────────────────────────────────────────────────────────────
+  traffic_16.jpg
+──────────────────────────────────────────────────────────────────────
+  CRITICAL
+    width            (min 480px)                  1155px           [PASS]
+    height           (min 360px)                  865px            [PASS]
+    file size        (min 50KB)                   1198.8KB         [PASS]
+    overexposed      (max 20.0%)                  0.5%             [PASS]
+    underexposed     (max 20.0%)                  1.5%             [PASS]
+  QUALITY
+    brightness       (target 50–200)              117.4            [PASS]
+    contrast         (min 15 std dev)             62.2             [PASS]
+    sharpness        (min 15 Lap.var)             3961.5           [PASS]
+    aspect ratio     (0.5–4.0)                    1.34             [PASS]
+  INFORMATIONAL  (context only – not counted in verdict)
+    noise ratio      (0 = clean, 1 = noisy)       0.431
+    saturation       (HSV S mean)                 59.3
+    channel balance  (RGB std dev)                4.3
+    resolution                                    1155×865  1.0MP
+
+  ► GOOD
+
+──────────────────────────────────────────────────────────────────────
+  traffic_17.jpg
+──────────────────────────────────────────────────────────────────────
+  CRITICAL
+    width            (min 480px)                  3200px           [PASS]
+    height           (min 360px)                  2040px           [PASS]
+    file size        (min 50KB)                   2503.7KB         [PASS]
+    overexposed      (max 20.0%)                  1.7%             [PASS]
+    underexposed     (max 20.0%)                  0.0%             [PASS]
+  QUALITY
+    brightness       (target 50–200)              119.4            [PASS]
+    contrast         (min 15 std dev)             61.8             [PASS]
+    sharpness        (min 15 Lap.var)             1057.7           [PASS]
+    aspect ratio     (0.5–4.0)                    1.57             [PASS]
+  INFORMATIONAL  (context only – not counted in verdict)
+    noise ratio      (0 = clean, 1 = noisy)       0.433
+    saturation       (HSV S mean)                 46.1
+    channel balance  (RGB std dev)                4.5
+    resolution                                    3200×2040  6.53MP
+
+  ► GOOD
+
+──────────────────────────────────────────────────────────────────────
+  traffic_18.jpg
+──────────────────────────────────────────────────────────────────────
+  CRITICAL
+    width            (min 480px)                  3648px           [PASS]
+    height           (min 360px)                  2056px           [PASS]
+    file size        (min 50KB)                   855.7KB          [PASS]
+    overexposed      (max 20.0%)                  0.6%             [PASS]
+    underexposed     (max 20.0%)                  0.8%             [PASS]
+  QUALITY
+    brightness       (target 50–200)              118.8            [PASS]
+    contrast         (min 15 std dev)             61.3             [PASS]
+    sharpness        (min 15 Lap.var)             768.5            [PASS]
+    aspect ratio     (0.5–4.0)                    1.77             [PASS]
+  INFORMATIONAL  (context only – not counted in verdict)
+    noise ratio      (0 = clean, 1 = noisy)       0.642
+    saturation       (HSV S mean)                 52.3
+    channel balance  (RGB std dev)                1.5
+    resolution                                    3648×2056  7.5MP
+
+  ► GOOD
+
+──────────────────────────────────────────────────────────────────────
+  traffic_19.jpg
+──────────────────────────────────────────────────────────────────────
+  CRITICAL
+    width            (min 480px)                  3648px           [PASS]
+    height           (min 360px)                  2056px           [PASS]
+    file size        (min 50KB)                   728.3KB          [PASS]
+    overexposed      (max 20.0%)                  0.3%             [PASS]
+    underexposed     (max 20.0%)                  0.5%             [PASS]
+  QUALITY
+    brightness       (target 50–200)              108.7            [PASS]
+    contrast         (min 15 std dev)             55.8             [PASS]
+    sharpness        (min 15 Lap.var)             433.2            [PASS]
+    aspect ratio     (0.5–4.0)                    1.77             [PASS]
+  INFORMATIONAL  (context only – not counted in verdict)
+    noise ratio      (0 = clean, 1 = noisy)       0.664
+    saturation       (HSV S mean)                 49.0
+    channel balance  (RGB std dev)                2.1
+    resolution                                    3648×2056  7.5MP
+
+  ► GOOD
+
+──────────────────────────────────────────────────────────────────────
+  traffic_20.jpg
+──────────────────────────────────────────────────────────────────────
+  CRITICAL
+    width            (min 480px)                  3648px           [PASS]
+    height           (min 360px)                  2056px           [PASS]
+    file size        (min 50KB)                   697.2KB          [PASS]
+    overexposed      (max 20.0%)                  6.1%             [WARN]
+    underexposed     (max 20.0%)                  0.4%             [PASS]
+  QUALITY
+    brightness       (target 50–200)              123.9            [PASS]
+    contrast         (min 15 std dev)             61.2             [PASS]
+    sharpness        (min 15 Lap.var)             490.3            [PASS]
+    aspect ratio     (0.5–4.0)                    1.77             [PASS]
+  INFORMATIONAL  (context only – not counted in verdict)
+    noise ratio      (0 = clean, 1 = noisy)       0.576
+    saturation       (HSV S mean)                 43.7
+    channel balance  (RGB std dev)                1.6
+    resolution                                    3648×2056  7.5MP
+
+  ► ACCEPTABLE (1 quality warning)
+
+──────────────────────────────────────────────────────────────────────
+  traffic_21.jpg
+──────────────────────────────────────────────────────────────────────
+  CRITICAL
+    width            (min 480px)                  2477px           [PASS]
+    height           (min 360px)                  1651px           [PASS]
+    file size        (min 50KB)                   1055.7KB         [PASS]
+    overexposed      (max 20.0%)                  0.4%             [PASS]
+    underexposed     (max 20.0%)                  0.3%             [PASS]
+  QUALITY
+    brightness       (target 50–200)              128.1            [PASS]
+    contrast         (min 15 std dev)             59.9             [PASS]
+    sharpness        (min 15 Lap.var)             493.8            [PASS]
+    aspect ratio     (0.5–4.0)                    1.5              [PASS]
+  INFORMATIONAL  (context only – not counted in verdict)
+    noise ratio      (0 = clean, 1 = noisy)       0.543
+    saturation       (HSV S mean)                 53.2
+    channel balance  (RGB std dev)                0.5
+    resolution                                    2477×1651  4.09MP
+
+  ► GOOD
+
+──────────────────────────────────────────────────────────────────────
+  traffic_22.jpg
+──────────────────────────────────────────────────────────────────────
+  CRITICAL
+    width            (min 480px)                  1606px           [PASS]
+    height           (min 360px)                  948px            [PASS]
+    file size        (min 50KB)                   579.2KB          [PASS]
+    overexposed      (max 20.0%)                  1.4%             [PASS]
+    underexposed     (max 20.0%)                  3.3%             [PASS]
+  QUALITY
+    brightness       (target 50–200)              103.2            [PASS]
+    contrast         (min 15 std dev)             61.7             [PASS]
+    sharpness        (min 15 Lap.var)             1994.2           [PASS]
+    aspect ratio     (0.5–4.0)                    1.69             [PASS]
+  INFORMATIONAL  (context only – not counted in verdict)
+    noise ratio      (0 = clean, 1 = noisy)       0.551
+    saturation       (HSV S mean)                 59.3
+    channel balance  (RGB std dev)                4.9
+    resolution                                    1606×948  1.52MP
+
+  ► GOOD
+
+======================================================================
+  SUMMARY TABLE
+======================================================================
+  Image                      Resolution    Size  Bright    Sharp  Verdict
+  ──────────────────────────────────────────────────────────────────────────────────
+  traffic_01.jpg              3236×1903   1465KB   109.2    377.3  GOOD
+  traffic_02.jpg               1200×720    420KB   115.4   5881.1  GOOD
+  traffic_03.jpg               1000×643    274KB   136.7   2351.0  GOOD
+  traffic_04.jpg              1500×1002   1146KB   172.8   1929.1  ACCEPTABLE (1 quality warning)
+  traffic_05.jpg              1500×1002    494KB   127.7   2798.7  GOOD
+  traffic_06.jpg              2560×1707   1284KB   149.1    341.4  GOOD
+  traffic_07.jpg              2000×1333   1298KB   123.1   6319.5  GOOD
+  traffic_08.jpg              2000×1256   2337KB   120.1   2202.2  GOOD
+  traffic_09.jpg              2560×1536   1244KB   101.2    623.3  GOOD
+  traffic_10.jpg               1357×852    166KB   100.9   1150.3  GOOD
+  traffic_11.jpg               1200×750    366KB   114.2   4691.9  GOOD
+  traffic_12.jpg              2048×1365    780KB   106.4    458.9  GOOD
+  traffic_13.jpg              1966×1311    838KB    94.5   2678.0  GOOD
+  traffic_14.jpg               1198×627    239KB    94.1    565.3  GOOD
+  traffic_15.jpg              1920×1280    644KB   105.3    523.2  GOOD
+  traffic_16.jpg               1155×865   1199KB   117.4   3961.5  GOOD
+  traffic_17.jpg              3200×2040   2504KB   119.4   1057.7  GOOD
+  traffic_18.jpg              3648×2056    856KB   118.8    768.5  GOOD
+  traffic_19.jpg              3648×2056    728KB   108.7    433.2  GOOD
+  traffic_20.jpg              3648×2056    697KB   123.9    490.3  ACCEPTABLE (1 quality warning)
+  traffic_21.jpg              2477×1651   1056KB   128.1    493.8  GOOD
+  traffic_22.jpg               1606×948    579KB   103.2   1994.2  GOOD
+
+  Verdict guide:
+    GOOD       – suitable for detection and validation
+    ACCEPTABLE – usable, note any warnings in report
+    UNUSABLE   – discard, critical quality issue
+
+  Note: noise ratio, saturation, and channel balance are shown
+  as context only and do not affect the verdict.

@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decision Maker Simulator</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #0A0B0F;
+  --surface:  #111318;
+  --surface2: #181B22;
+  --surface3: #1E2230;
+  --border:   #252A38;
+  --border2:  #2F3648;
+  --text:     #E8EAF0;
+  --muted:    #B0B8D0;
+  --dim:      #7A85A0;
+
+  --ns:       #38BDF8;
+  --ns2:      #0EA5E9;
+  --ns-glow:  rgba(56,189,248,0.15);
+  --ns-bg:    rgba(56,189,248,0.07);
+  --ns-border:rgba(56,189,248,0.2);
+
+  --ew:       #A78BFA;
+  --ew2:      #8B5CF6;
+  --ew-glow:  rgba(167,139,250,0.15);
+  --ew-bg:    rgba(167,139,250,0.07);
+  --ew-border:rgba(167,139,250,0.2);
+
+  --amber:    #FBBF24;
+  --amber-bg: rgba(251,191,36,0.08);
+  --amber-border: rgba(251,191,36,0.25);
+
+  --green:    #34D399;
+  --red:      #F87171;
+
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Space Grotesk', sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+
+/* ── HEADER ── */
+.header {
+  padding: 18px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-left { display: flex; align-items: center; gap: 12px; }
+.header-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--ns);
+  box-shadow: 0 0 12px var(--ns);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%,100% { box-shadow: 0 0 8px var(--ns); }
+  50%      { box-shadow: 0 0 20px var(--ns), 0 0 40px rgba(56,189,248,0.3); }
+}
+.header-title {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+.header-badge {
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 3px 8px;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+}
+
+/* ── LAYOUT ── */
+.layout {
+  display: grid;
+  grid-template-columns: 290px 1fr;
+  height: calc(100vh - 57px);
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 16px 8px 20px 20px;
+  overflow-y: auto;
+  height: 100%;
+}
+
+.s-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.phase-block {
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+}
+.phase-block.ns {
+  background: var(--ns-bg);
+  border-color: var(--ns-border);
+}
+.phase-block.ew {
+  background: var(--ew-bg);
+  border-color: var(--ew-border);
+}
+.phase-label {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.phase-label.ns { color: var(--ns); }
+.phase-label.ew { color: var(--ew); }
+.phase-pip {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.ns .phase-pip { background: var(--ns); box-shadow: 0 0 6px var(--ns); }
+.ew .phase-pip { background: var(--ew); box-shadow: 0 0 6px var(--ew); }
+
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+.slider-name {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: #C8D0E8;
+  min-width: 68px;
+}
+input[type="range"] {
+  flex: 1;
+  height: 3px;
+  appearance: none;
+  background: var(--border2);
+  border-radius: 99px;
+  outline: none;
+  cursor: pointer;
+}
+.ns input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: var(--ns);
+  box-shadow: 0 0 6px var(--ns);
+  cursor: pointer;
+}
+.ew input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: var(--ew);
+  box-shadow: 0 0 6px var(--ew);
+  cursor: pointer;
+}
+.env-block input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: var(--amber);
+  cursor: pointer;
+}
+.sys-block input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--muted);
+  cursor: pointer;
+}
+.slider-val {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 12px;
+  text-align: right;
+}
+.ns .slider-val { color: var(--ns); }
+.ew .slider-val { color: var(--ew); }
+.env-block .slider-val { color: var(--amber); }
+.sys-block .slider-val { color: var(--muted); }
+
+.divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+.env-block { margin-bottom: 12px; }
+.env-block .slider-name { color: var(--muted); }
+
+.sys-block { margin-bottom: 12px; }
+.sys-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.sys-item {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 9px 12px;
+}
+.sys-item label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 5px;
+}
+.sys-item .sys-val {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.sys-item input[type="range"] { width: 100%; margin-bottom: 3px; }
+
+.preset-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.preset-row { display: flex; flex-wrap: wrap; gap: 5px; }
+.preset-btn {
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 4px 9px;
+  border-radius: 4px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: #B8C2D8;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.preset-btn:hover {
+  background: var(--surface3);
+  color: var(--text);
+  border-color: var(--border2);
+}
+
+/* ── MAIN ── */
+.main {
+  overflow-y: auto;
+  padding: 24px 28px;
+  height: 100%;
+}
+
+/* ── METRIC CARDS ── */
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.mcard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s;
+  text-align: center;
+}
+.mcard::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.mcard.ns::before { background: linear-gradient(90deg, var(--ns), transparent); }
+.mcard.ew::before { background: linear-gradient(90deg, var(--ew), transparent); }
+.mcard.env::before { background: linear-gradient(90deg, var(--amber), transparent); }
+.mcard.starv::before { background: linear-gradient(90deg, var(--red), transparent); }
+
+.mcard-label {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.mcard-big {
+  font-family: var(--mono);
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1;
+  margin-bottom: 6px;
+  letter-spacing: -0.03em;
+}
+.mcard.ns .mcard-big { color: var(--ns); text-shadow: 0 0 30px rgba(56,189,248,0.4); }
+.mcard.ew .mcard-big { color: var(--ew); text-shadow: 0 0 30px rgba(167,139,250,0.4); }
+.mcard.env .mcard-big { color: var(--amber); }
+.mcard.starv .mcard-big { color: var(--red); }
+
+.mcard-sub {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+}
+.mcard-raw {
+  font-family: var(--mono);
+  font-size: 13px;
+  margin-top: 4px;
+  text-align: center;
+}
+.mcard.ns .mcard-raw { color: rgba(56,189,248,0.6); }
+.mcard.ew .mcard-raw { color: rgba(167,139,250,0.6); }
+
+/* ── FORMULA STRIP ── */
+.formula-strip {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px 28px;
+  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  overflow: hidden;
+}
+.fstep { padding: 0 24px 0 0; border-right: 1px solid var(--border); text-align: center; }
+.fstep:last-child { padding-right: 0; padding-left: 24px; }
+.fstep:first-child { padding-left: 0; }
+.fstep-label {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 9px;
+}
+.fstep-expr {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.fstep-result {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 500;
+  margin-top: 5px;
+  letter-spacing: -0.02em;
+}
+.hi-ns { color: var(--ns); }
+.hi-ew { color: var(--ew); }
+.hi-amber { color: var(--amber); }
+.hi-green { color: var(--green); }
+
+/* ── TABS ── */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.tab-btn {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 9px 18px;
+  border: none;
+  background: none;
+  color: var(--dim);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.12s;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--ns); border-bottom-color: var(--ns); }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── TABLE ── */
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 13px;
+}
+thead th {
+  padding: 12px 14px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.08s;
+}
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--surface2); }
+tbody tr.row-starved { background: rgba(251,191,36,0.04); }
+tbody tr.row-starved:hover { background: rgba(251,191,36,0.07); }
+td {
+  padding: 10px 14px;
+  color: #A8B4CC;
+  white-space: nowrap;
+  vertical-align: middle;
+  text-align: center;
+}
+td.td-cycle { color: var(--dim); }
+td.td-winner {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green);
+  letter-spacing: -0.01em;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 3px;
+  letter-spacing: 0.06em;
+}
+.badge-ns { background: var(--ns-bg); color: var(--ns); border: 1px solid var(--ns-border); }
+.badge-ew { background: var(--ew-bg); color: var(--ew); border: 1px solid var(--ew-border); }
+.badge-warn { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-border); }
+
+.table-footer {
+  padding: 12px 14px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--surface2);
+  border-top: 1px solid var(--border);
+}
+.table-footer strong { color: var(--amber); font-weight: 600; }
+
+/* ── GUIDE ── */
+.guide { max-width: 720px; }
+.guide-section { margin-bottom: 36px; }
+.guide-h2 {
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.guide-h2 .num {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 3px 8px;
+  border-radius: 3px;
+  background: var(--ns);
+  color: var(--bg);
+}
+.guide p {
+  color: var(--muted);
+  margin-bottom: 12px;
+  line-height: 1.75;
+  font-size: 15px;
+}
+.guide p strong { color: var(--text); font-weight: 600; }
+
+.formula-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--ns);
+  border-radius: 8px;
+  padding: 16px 18px;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 2.3;
+  margin: 12px 0;
+  color: var(--text);
+}
+.formula-box .c { color: var(--dim); }
+.formula-box .v { color: var(--ns); }
+.formula-box .n { color: var(--amber); font-weight: 600; }
+.formula-box .ew-v { color: var(--ew); }
+
+.param-table {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 12px 0;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.param-table th {
+  background: var(--surface2);
+  padding: 9px 14px;
+  text-align: left;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+  border-bottom: 1px solid var(--border);
+}
+.param-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+}
+.param-table tr:last-child td { border-bottom: none; }
+.param-table td:first-child { color: var(--ns); font-weight: 600; }
+.param-table td:nth-child(2) { color: var(--amber); font-weight: 600; }
+
+.callout {
+  background: var(--amber-bg);
+  border: 1px solid var(--amber-border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin: 12px 0;
+}
+.callout-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 6px;
+}
+.callout p { color: var(--text); font-size: 13px; margin-bottom: 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-dot"></div>
+    <span class="header-title">decision_maker.py – simulator</span>
+  </div>
+  <div style="display:flex;gap:8px">
+    <span class="header-badge">CO3107</span>
+    <span class="header-badge">AI MODULE</span>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="s-title">Traffic Input</div>
+
+    <div class="phase-block ns">
+      <div class="phase-label ns"><span class="phase-pip"></span>Phase NS · North + South</div>
+      <div class="slider-row">
+        <span class="slider-name">wtd. score</span>
+        <input type="range" min="0" max="200" value="120" id="ns-ws" oninput="update()">
+        <span class="slider-val" id="ns-ws-v">120</span>
+      </div>
+      <div class="slider-row">
+        <span class="slider-name">density</span>
+        <input type="range" min="0" max="100" value="20" id="ns-d" oninput="update()">
+        <span class="slider-val" id="ns-d-v">0.20</span>
+      </div>
+    </div>
+
+    <div class="phase-block ew">
+      <div class="phase-label ew"><span class="phase-pip"></span>Phase EW · East + West</div>
+      <div class="slider-row">
+        <span class="slider-name">wtd. score</span>
+        <input type="range" min="0" max="200" value="10" id="ew-ws" oninput="update()">
+        <span class="slider-val" id="ew-ws-v">10</span>
+      </div>
+      <div class="slider-row">
+        <span class="slider-name">density</span>
+        <input type="range" min="0" max="100" value="5" id="ew-d" oninput="update()">
+        <span class="slider-val" id="ew-d-v">0.05</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="s-title">Environment</div>
+
+    <div class="env-block">
+      <div class="slider-row">
+        <span class="slider-name" style="color:var(--muted)">temperature</span>
+        <input type="range" min="15" max="45" value="28" id="temp" oninput="update()">
+        <span class="slider-val" id="temp-v" style="color:var(--amber)">28°C</span>
+      </div>
+      <div class="slider-row">
+        <span class="slider-name" style="color:var(--muted)">light</span>
+        <input type="range" min="0" max="1200" value="400" id="light" oninput="update()">
+        <span class="slider-val" id="light-v" style="color:var(--amber)">400</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="s-title">System Parameters</div>
+
+    <div class="sys-block">
+      <div class="sys-grid">
+        <div class="sys-item">
+          <label>Smoothing λ</label>
+          <input type="range" min="10" max="90" value="40" id="smooth" oninput="update()">
+          <div class="sys-val" id="smooth-v">0.40</div>
+        </div>
+        <div class="sys-item">
+          <label>Max Δ / cy</label>
+          <input type="range" min="2" max="20" value="10" id="max-chg" oninput="update()">
+          <div class="sys-val" id="max-chg-v">10s</div>
+        </div>
+      </div>
+
+      <div class="slider-row" style="margin-top:4px">
+        <span class="slider-name" style="color:var(--muted);font-family:var(--mono);font-size:12px">cycles</span>
+        <input type="range" min="4" max="20" value="10" id="num-cycles" oninput="update()">
+        <span class="slider-val" style="color:var(--muted);font-family:var(--mono);font-size:11px;font-weight:600;min-width:38px;text-align:right" id="num-cycles-v">10</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="preset-label">Quick presets</div>
+    <div class="preset-row">
+      <button class="preset-btn" onclick="setPreset('balanced')">balanced</button>
+      <button class="preset-btn" onclick="setPreset('heavy-ns')">heavy NS</button>
+      <button class="preset-btn" onclick="setPreset('empty')">empty</button>
+      <button class="preset-btn" onclick="setPreset('hot')">hot + bright</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- cards -->
+    <div class="metrics-row">
+      <div class="mcard ns">
+        <div class="mcard-label">NS Priority Score</div>
+        <div class="mcard-big" id="m-ns-prio">–</div>
+        <div class="mcard-raw" id="m-ns-raw">–</div>
+        <div class="mcard-sub" id="m-ns-win">–</div>
+      </div>
+      <div class="mcard ew">
+        <div class="mcard-label">EW Priority Score</div>
+        <div class="mcard-big" id="m-ew-prio">–</div>
+        <div class="mcard-raw" id="m-ew-raw">–</div>
+        <div class="mcard-sub" id="m-ew-win">–</div>
+      </div>
+      <div class="mcard env">
+        <div class="mcard-label">Environment Factor</div>
+        <div class="mcard-big" id="m-env">–</div>
+        <div class="mcard-sub" id="m-env-reason">–</div>
+      </div>
+    </div>
+
+    <!-- formula -->
+    <div class="formula-strip">
+      <div class="fstep">
+        <div class="fstep-label">① normalize</div>
+        <div class="fstep-expr" id="f-norm-expr">–</div>
+        <div class="fstep-result hi-ns" id="f-norm-res">–</div>
+      </div>
+      <div class="fstep">
+        <div class="fstep-label">② priority</div>
+        <div class="fstep-expr" id="f-prio-expr">–</div>
+        <div class="fstep-result hi-ns" id="f-prio-res">–</div>
+      </div>
+      <div class="fstep">
+        <div class="fstep-label">③ raw duration</div>
+        <div class="fstep-expr" id="f-raw-expr">–</div>
+        <div class="fstep-result hi-amber" id="f-raw-res">–</div>
+      </div>
+      <div class="fstep">
+        <div class="fstep-label">④ env adjusted</div>
+        <div class="fstep-expr" id="f-adj-expr">–</div>
+        <div class="fstep-result hi-green" id="f-adj-res">–</div>
+      </div>
+    </div>
+
+    <!-- tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('simulation', this)">Simulation table</button>
+      <button class="tab-btn" onclick="switchTab('guide', this)">Algorithm guide</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-simulation">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Phase</th><th>Wtd. score</th><th>Density</th>
+              <th>Priority</th><th>Raw dur.</th><th>Env ×</th>
+              <th>After smooth</th><th>Green dur.</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <div class="table-footer" id="table-footer">–</div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-guide">
+      <div class="guide">
+
+        <div class="guide-section">
+          <div class="guide-h2"><span class="num">01</span>Overview</div>
+          <p>The Decision Maker determines <strong>which traffic phase gets the green light</strong> and <strong>for how long</strong>. The system uses two fixed phases: <strong style="color:var(--ns)">NS</strong> (North + South) and <strong style="color:var(--ew)">EW</strong> (East + West). Only one phase is green at a time.</p>
+          <p>Each cycle, the engine computes a priority score for both phases, picks the winner, calculates a stable green duration, and dispatches the command to physical lights via MQTT.</p>
+        </div>
+
+        <div class="guide-section">
+          <div class="guide-h2"><span class="num">02</span>Priority Score</div>
+          <p>For each phase, the engine aggregates both directions then computes a score in [0, 1] reflecting how urgently that phase needs green.</p>
+          <div class="formula-box">
+            <span class="c">// aggregate both directions</span><br>
+            <span class="v">weighted_score</span> = score_dir1 + score_dir2<br>
+            <span class="v">density</span> = (density_dir1 + density_dir2) / 2<br><br>
+            <span class="c">// normalize to [0, 1]</span><br>
+            <span class="v">normalized</span> = min(weighted_score / <span class="n">200</span>, 1.0)<br><br>
+            <span class="c">// weighted sum</span><br>
+            <span class="v">priority</span> = <span class="n">0.6</span> × normalized + <span class="n">0.4</span> × density
+          </div>
+          <p>α = 0.6 weights vehicle count (direct congestion). β = 0.4 weights lane density – this captures dense motorcycle clusters that YOLO may miss due to occlusion, detected instead by our hybrid Canny edge estimator.</p>
+        </div>
+
+        <div class="guide-section">
+          <div class="guide-h2"><span class="num">03</span>Green Duration</div>
+          <p>The winning phase gets a green duration calculated from its priority score, then adjusted for environmental conditions:</p>
+          <div class="formula-box">
+            <span class="v">raw_duration</span> = <span class="n">10</span> + <span class="n">40</span> × priority<br><br>
+            <span class="c">// environment adjustment</span><br>
+            env_factor = 1.0<br>
+            &nbsp;&nbsp;+ <span class="n">0.10</span> if temperature &gt; 35°C<br>
+            &nbsp;&nbsp;+ <span class="n">0.05</span> if light &gt; 900 lux<br><br>
+            <span class="v">adjusted</span> = raw_duration × env_factor
+          </div>
+          <p>Base of 10s guarantees a minimum green even with zero traffic.</p>
+          <p>k = 40 means full congestion (priority = 1.0) yields up to 50s green.</p>
+        </div>
+
+        <div class="guide-section">
+          <div class="guide-h2"><span class="num">04</span>Smoothing &amp; Stability</div>
+          <p>Raw durations can jump due to noisy image input. Exponential smoothing blends new values with history:</p>
+          <div class="formula-box">
+            <span class="v">smoothed</span> = <span class="n">λ</span> × adjusted + (1 − <span class="n">λ</span>) × previous<br><br>
+            <span class="c">// cap maximum shift per cycle</span><br>
+            if |smoothed − previous| &gt; max_change:<br>
+            &nbsp;&nbsp;smoothed = previous ± max_change<br><br>
+            <span class="c">// hard bounds</span><br>
+            <span class="v">final</span> = clamp(smoothed, <span class="n">10</span>s, <span class="n">60</span>s)
+          </div>
+          <p>λ = 0.4: new reading contributes 40%, history 60%.</p>
+          <p>max_change = 10s: no single cycle shifts duration by more than 10 seconds regardless of traffic spike.</p>
+        </div>
+
+        <div class="guide-section">
+          <div class="guide-h2"><span class="num">05</span>Parameter Reference</div>
+          <table class="param-table">
+            <thead><tr><th>Parameter</th><th>Default</th><th>What it controls</th></tr></thead>
+            <tbody>
+              <tr><td>α (alpha)</td><td>0.6</td><td>Vehicle count weight in priority score</td></tr>
+              <tr><td>β (beta)</td><td>0.4</td><td>Density weight in priority score</td></tr>
+              <tr><td>base_time</td><td>10s</td><td>Minimum green with zero traffic</td></tr>
+              <tr><td>k</td><td>40</td><td>Max additional seconds at priority = 1.0</td></tr>
+              <tr><td>max_weighted_score</td><td>200</td><td>Normalization ceiling for vehicle score</td></tr>
+              <tr><td>λ (smoothing)</td><td>0.4</td><td>New reading influence (0 = no change, 1 = full)</td></tr>
+              <tr><td>max_change</td><td>10s</td><td>Max duration shift allowed per cycle</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const ALPHA=0.6,BETA=0.4,BASE=15,K=40,MAX_WS=200,MIN_G=15,MAX_G=90;
+const $=id=>document.getElementById(id);
+const getVal=id=>parseFloat($(id).value);
+
+function norm(ws){return Math.min(ws/MAX_WS,1.0);}
+function prio(ws,d){return ALPHA*norm(ws)+BETA*d;}
+function env(t,l){let f=1.0;if(t>35)f+=0.10;if(l>900)f+=0.05;return f;}
+
+function simulate(){
+  const nsWS=getVal('ns-ws'),nsD=getVal('ns-d')/100;
+  const ewWS=getVal('ew-ws'),ewD=getVal('ew-d')/100;
+  const temp=getVal('temp'),light=getVal('light');
+  const smooth=getVal('smooth')/100,maxChg=getVal('max-chg');
+  const cycles=getVal('num-cycles');
+  const ef=env(temp,light);
+  const prevDur={NS:BASE,EW:BASE};
+  const rows=[];
+
+  const nsPrio=prio(nsWS,nsD);
+  const ewPrio=prio(ewWS,ewD);
+
+  for(let i=0;i<cycles;i++){
+    const phase=(i%2===0)?'NS':'EW';
+    const ws  = phase==='NS' ? nsWS : ewWS;
+    const d   = phase==='NS' ? nsD  : ewD;
+    const p   = prio(ws, d);
+    const raw = BASE + K*p;
+    const adj = raw * ef;
+    const prev = prevDur[phase];
+    let sm = smooth*adj + (1-smooth)*prev;
+    const delta = sm - prev;
+    if(delta >  maxChg) sm = prev + maxChg;
+    else if(delta < -maxChg) sm = prev - maxChg;
+    const final = Math.max(MIN_G, Math.min(MAX_G, sm));
+    rows.push({cycle:i+1,phase,ws,d,p,raw,ef,adj,sm:final,final});
+    prevDur[phase]=final;
+  }
+  return{rows,ef,nsPrio,ewPrio};
+}
+
+function update(){
+  $('ns-ws-v').textContent=getVal('ns-ws');
+  $('ns-d-v').textContent=(getVal('ns-d')/100).toFixed(2);
+  $('ew-ws-v').textContent=getVal('ew-ws');
+  $('ew-d-v').textContent=(getVal('ew-d')/100).toFixed(2);
+  $('temp-v').textContent=getVal('temp')+'°C';
+  $('light-v').textContent=getVal('light');
+  $('smooth-v').textContent=(getVal('smooth')/100).toFixed(2);
+  $('max-chg-v').textContent=getVal('max-chg')+'s';
+  $('num-cycles-v').textContent=getVal('num-cycles');
+
+  const{rows,ef,nsPrio,ewPrio}=simulate();
+  const nsWS=getVal('ns-ws'),nsD=getVal('ns-d')/100;
+  const temp=getVal('temp'),light=getVal('light');
+
+  const nsWinner=nsPrio>=ewPrio;
+  const nsRaw=BASE+K*nsPrio,ewRaw=BASE+K*ewPrio;
+
+  $('m-ns-prio').textContent=nsPrio.toFixed(3);
+  $('m-ew-prio').textContent=ewPrio.toFixed(3);
+  $('m-ns-raw').textContent=`→ raw ${(nsRaw*ef).toFixed(1)}s green`;
+  $('m-ew-raw').textContent=`→ raw ${(ewRaw*ef).toFixed(1)}s green`;
+  $('m-ns-win').textContent=nsWinner?'● winner this cycle':'○ waiting';
+  $('m-ew-win').textContent=!nsWinner?'● winner this cycle':'○ waiting';
+  $('m-env').textContent=ef.toFixed(2)+'×';
+  const reasons=[];
+  if(temp>35)reasons.push('+10% temp');
+  if(light>900)reasons.push('+5% light');
+  $('m-env-reason').textContent=reasons.length?reasons.join(' · '):'no adjustment applied';
+
+  // formula steps
+  const n=norm(nsWS),p=prio(nsWS,nsD),r=BASE+K*p,a=r*ef;
+  $('f-norm-expr').textContent=`min(${nsWS} / 200, 1.0)`;
+  $('f-norm-res').textContent=n.toFixed(3);
+  $('f-prio-expr').textContent=`0.6 × ${n.toFixed(3)} + 0.4 × ${nsD.toFixed(2)}`;
+  $('f-prio-res').textContent=p.toFixed(3);
+  $('f-raw-expr').textContent=`10 + 40 × ${p.toFixed(3)}`;
+  $('f-raw-res').textContent=r.toFixed(2)+'s';
+  $('f-adj-expr').textContent=`${r.toFixed(2)} × ${ef.toFixed(2)}`;
+  $('f-adj-res').textContent=a.toFixed(2)+'s';
+
+  const tbody=$('tbody');
+  tbody.innerHTML='';
+  rows.forEach(r=>{
+    const tr=document.createElement('tr');
+    const prioColor=r.phase==='NS'?'var(--ns)':'var(--ew)';
+    tr.innerHTML=`
+      <td class="td-cycle">${r.cycle}</td>
+      <td><span class="badge badge-${r.phase.toLowerCase()}">${r.phase}</span></td>
+      <td>${r.ws}</td>
+      <td>${r.d.toFixed(2)}</td>
+      <td style="color:${prioColor};font-weight:600">${r.p.toFixed(3)}</td>
+      <td>${r.raw.toFixed(1)}s</td>
+      <td>${r.ef.toFixed(2)}×</td>
+      <td>${r.sm.toFixed(1)}s</td>
+      <td class="td-winner">${r.final.toFixed(1)}s</td>`;
+    tbody.appendChild(tr);
+  });
+
+  const footer=$('table-footer');
+  footer.textContent=`Both phases always alternate – duration controlled by priority score only. ${rows.length} cycles simulated.`;
+}
+
+function switchTab(name,btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  $('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+function setPreset(name){
+  const p={
+    'balanced':{'ns-ws':80,'ns-d':30,'ew-ws':70,'ew-d':25,temp:28,light:400, smooth:40,'max-chg':10,'num-cycles':10},
+    'heavy-ns':{'ns-ws':180,'ns-d':60,'ew-ws':10,'ew-d':5,temp:28,light:400,smooth:40,'max-chg':10,'num-cycles':12},
+    'empty':   {'ns-ws':0,'ns-d':0,'ew-ws':0,'ew-d':0,temp:28,light:400,smooth:40,'max-chg':10,'num-cycles':8},
+    'hot':     {'ns-ws':100,'ns-d':30,'ew-ws':80,'ew-d':20,temp:40,light:1000,smooth:40,'max-chg':10,'num-cycles':10},
+  }[name];
+  Object.entries(p).forEach(([id,val])=>{$(id).value=val;});
+  update();
+}
+
+update();
+</script>
+</body>
+</html>
