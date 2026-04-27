@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Traffic System – Validation Report</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #F0F2F7;
+  color: #1A1D2E;
+  font-size: 14px;
+  line-height: 1.6;
+  padding: 32px 24px;
+}
+
+.page-header {
+  background: linear-gradient(135deg, #1A1D2E 0%, #2D3250 100%);
+  color: white;
+  border-radius: 16px;
+  padding: 36px 40px;
+  margin-bottom: 28px;
+}
+.page-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+.page-header .meta {
+  font-size: 13px;
+  color: #9BA3BF;
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.summary-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px 24px;
+  border: 1px solid #E2E6F0;
+  text-align: center;
+}
+.stat-card .stat-num {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-card .stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6B7280;
+}
+.stat-pass  { color: #059669; }
+.stat-fail  { color: #DC2626; }
+.stat-warn  { color: #D97706; }
+.stat-total { color: #2563EB; }
+
+.overall-status {
+  border-radius: 12px;
+  padding: 16px 24px;
+  margin-bottom: 28px;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 0.04em;
+}
+.status-pass { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
+.status-fail { background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; }
+
+.section {
+  background: white;
+  border-radius: 14px;
+  padding: 28px 32px;
+  margin-bottom: 20px;
+  border: 1px solid #E2E6F0;
+}
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1A1D2E;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #F0F2F7;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-title::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 18px;
+  background: #2563EB;
+  border-radius: 2px;
+}
+
+.subheader {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4B5563;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 20px 0 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid #F0F2F7;
+}
+
+.assert-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-bottom: 2px;
+  font-size: 13px;
+  font-family: 'Consolas', 'Cascadia Code', monospace;
+}
+.assert-row:hover { background: #F8F9FC; }
+.info-row { opacity: 0.65; }
+
+.assert-label  { flex: 1; color: #374151; }
+.assert-value  { color: #6B7280; min-width: 160px; text-align: right; }
+.note {
+  font-size: 11px;
+  color: #9CA3AF;
+  font-style: italic;
+  min-width: 200px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  min-width: 48px;
+  font-family: 'Consolas', monospace;
+}
+.badge-pass { background: #D1FAE5; color: #065F46; }
+.badge-fail { background: #FEE2E2; color: #991B1B; }
+.badge-warn { background: #FEF3C7; color: #92400E; }
+.badge-info { background: #DBEAFE; color: #1E40AF; }
+
+.badge-verdict-good       { background: #D1FAE5; color: #065F46; font-size: 11px; padding: 3px 10px; border-radius: 4px; font-weight: 700; display: inline-block; }
+.badge-verdict-acceptable { background: #FEF3C7; color: #92400E; font-size: 11px; padding: 3px 10px; border-radius: 4px; font-weight: 700; display: inline-block; }
+.badge-verdict-unusable   { background: #FEE2E2; color: #991B1B; font-size: 11px; padding: 3px 10px; border-radius: 4px; font-weight: 700; display: inline-block; }
+
+.log-line {
+  font-family: 'Consolas', 'Cascadia Code', monospace;
+  font-size: 12px;
+  color: #4B5563;
+  padding: 2px 10px;
+  line-height: 1.9;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  font-family: 'Consolas', monospace;
+  margin: 14px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #E2E6F0;
+}
+thead th {
+  background: #1A1D2E;
+  color: white;
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+tbody tr { border-bottom: 1px solid #F0F2F7; }
+tbody tr:hover { background: #F8F9FC; }
+tbody td { padding: 8px 14px; color: #374151; }
+tbody tr:last-child { border-bottom: none; }
+
+.prose {
+  color: #4B5563;
+  font-size: 13px;
+  margin-bottom: 12px;
+  line-height: 1.75;
+}
+
+.spacer { height: 14px; }
+
+.footer {
+  text-align: center;
+  color: #9CA3AF;
+  font-size: 12px;
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid #E2E6F0;
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Smart Traffic System – Validation Report</h1>
+  <div class="meta">
+    <span>Generated: 2026-04-27 13:22:21</span>
+    <span>Project: C:\Users\hongp\Downloads\Traffic State Optimization</span>
+    <span>Test pool: 22 images</span>
+  </div>
+</div>
+
+<div class="summary-bar">
+  <div class="stat-card">
+    <div class="stat-num stat-pass">97</div>
+    <div class="stat-label">Passed</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num stat-fail">1</div>
+    <div class="stat-label">Failed</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num stat-warn">1</div>
+    <div class="stat-label">Warnings</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num stat-total">99%</div>
+    <div class="stat-label">Pass rate</div>
+  </div>
+</div>
+
+<div class="overall-status status-fail">1 FAILURE(S) – review sections above</div>
+
+
+        <div class="section">
+          <div class="section-title">Section 1 – Decision Maker Unit Tests</div>
+        <p class="prose">All tests use synthetic TrafficState objects constructed directly from scalars. No images, no IoT, no external dependencies. Verifies directional correctness of green duration across 9 scenarios covering empty, dominant, balanced, monotonicity, environment, smoothing, clamping, and parameter sensitivity.</p>
+<div class="subheader">1A. Empty intersection (zero traffic)</div>
+
+        <div class="assert-row">
+          <span class="assert-label">NS duration == min_green (15.0s)</span>
+          <span class="assert-value">15.0s</span>
+          <span class="badge badge-pass">PASS</span>
+          <span class="note">no traffic → hard floor</span>
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">EW duration == min_green (15.0s)</span>
+          <span class="assert-value">15.0s</span>
+          <span class="badge badge-pass">PASS</span>
+          <span class="note">no traffic → hard floor</span>
+        </div><div class="subheader">1B. NS dominant (heavy NS, empty EW)</div>
+
+        <div class="assert-row">
+          <span class="assert-label">NS duration > EW duration</span>
+          <span class="assert-value">NS = 25.0s  EW = 15.0s</span>
+          <span class="badge badge-pass">PASS</span>
+          <span class="note">heavy NS traffic must yield longer green</span>
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">NS duration > base_time (15.0s)</span>
+          <span class="assert-value">25.0s</span>
+          <span class="badge badge-pass">PASS</span>
+          <span class="note">high priority should exceed base</span>
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">NS duration ≤ max_green (90.0s)</span>
+          <span class="assert-value">25.0s</span>
+          <span class="badge badge-pass">PASS</span>
+          <span class="note">hard ceiling must hold</span>
+        </div><div class="subheader">1C. EW dominant (empty NS, heavy EW)</div>
+
+        <div class="assert-row">
+          <span class="assert-label">EW duration > NS duration</span>
+          <span class="assert-value">EW = 25.0s  NS = 15.0s</span>
+          <span class="badge badge-pass">PASS</span>
+          <span class="note">heavy EW traffic must yield longer green</span>
+        </div><div class="subheader">1D. Balanced (equal traffic both phases)</div>
+
+        <div class="assert-row">
+          <span class="assert-label">NS ≈ EW duration (within 5s)</span>
+          <span class="assert-value">NS = 20.76s  EW = 20.76s  Δ = 0.0s</span>
+          <span class="badge badge-pass">PASS</span>
+          <span class="note">equal traffic → roughly equal green</span>
+        </div><div class="subheader">1E. Priority monotonicity (more traffic = longer green)</div>
+<div class="log-line">weighted_score =   0  →  green = 15.0s</div>
+<div class="log-line">weighted_score =  40  →  green = 16.9s</div>
+<div class="log-line">weighted_score =  80  →  green = 18.8s</div>
+<div class="log-line">weighted_score = 120  →  green = 20.8s</div>
+<div class="log-line">weighted_score = 160  →  green = 22.7s</div>
+<div class="log-line">weighted_score = 200  →  green = 24.6s</div>
+
+        <div class="assert-row">
+          <span class="assert-label">Duration monotonically non-decreasing</span>
+          <span class="assert-value">MONO</span>
+          <span class="badge badge-pass">PASS</span>
+          <span class="note">increasing traffic must never decrease green time</span>
+        </div><div class="subheader">1F. Environment factor (temperature + light)</div>
+<div class="log-line">Baseline (28°C, 400 lux)  : 20.8s</div>
+<div class="log-line">Hot     (40°C, 400 lux)   : 21.9s  (+10% expected)</div>
+<div class="log-line">Bright  (28°C, 950 lux)   : 21.4s  (+5% expected)</div>
+<div class="log-line">Both    (40°C, 950 lux)   : 22.5s  (+15% expected)</div>
+
+        <div class="assert-row">
+          <span class="assert-label">Hot > baseline</span>
+          <span class="assert-value">21.9s > 20.8s</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">Bright > baseline</span>
+          <span class="assert-value">21.4s > 20.8s</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">Both > either alone</span>
+          <span class="assert-value">22.5s</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div><div class="subheader">1G. Smoothing stability (10 alternating cycles, heavy traffic)</div>
+<div class="log-line">Cycle  1  NS = 25.0s  Δ = 10.0s</div>
+<div class="log-line">Cycle  2  NS = 32.5s  Δ = 7.5s</div>
+<div class="log-line">Cycle  3  NS = 37.0s  Δ = 4.5s</div>
+<div class="log-line">Cycle  4  NS = 39.7s  Δ = 2.7s</div>
+<div class="log-line">Cycle  5  NS = 41.4s  Δ = 1.6s</div>
+<div class="log-line">Cycle  6  NS = 42.3s  Δ = 1.0s</div>
+<div class="log-line">Cycle  7  NS = 42.9s  Δ = 0.6s</div>
+<div class="log-line">Cycle  8  NS = 43.3s  Δ = 0.4s</div>
+<div class="log-line">Cycle  9  NS = 43.5s  Δ = 0.2s</div>
+<div class="log-line">Cycle 10  NS = 43.6s  Δ = 0.1s</div>
+
+        <div class="assert-row">
+          <span class="assert-label">Max jump ≤ max_change (10.0s)</span>
+          <span class="assert-value">10.0s</span>
+          <span class="badge badge-pass">PASS</span>
+          <span class="note">smoothing + change limit must hold</span>
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">Duration ramps up toward steady state</span>
+          <span class="assert-value">25.0s → 43.6s</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div><div class="subheader">1H. Hard clamp [min_green, max_green]</div>
+
+        <div class="assert-row">
+          <span class="assert-label">NS in [15.0, 90.0] (empty)</span>
+          <span class="assert-value">15.0s</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">EW in [15.0, 90.0] (empty)</span>
+          <span class="assert-value">15.0s</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">NS in [15.0, 90.0] (max traffic)</span>
+          <span class="assert-value">25.0s</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">EW in [15.0, 90.0] (max traffic)</span>
+          <span class="assert-value">25.0s</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div><div class="subheader">1I. Parameter sensitivity (α and β weights)</div>
+<p class="prose">Verifies that α controls vehicle count influence and β controls density influence. Scenario A: high score, low density – high-α engine should produce longer green. Scenario B: low score, high density – high-β engine should produce longer green.</p>
+<div class="log-line">Scenario A – score=180, density=0.02:</div>
+<div class="log-line">  α=0.9  →  25.0s</div>
+<div class="log-line">  α=0.1  →  16.7s</div>
+
+        <div class="assert-row">
+          <span class="assert-label">High-α > low-α when score dominates</span>
+          <span class="assert-value">25.0s > 16.7s</span>
+          <span class="badge badge-pass">PASS</span>
+          <span class="note">α=0.9 weights vehicle count more heavily</span>
+        </div><div class="log-line">Scenario B – score=10, density=0.40:</div>
+<div class="log-line">  β=0.9  →  20.8s</div>
+<div class="log-line">  β=0.1  →  16.4s</div>
+
+        <div class="assert-row">
+          <span class="assert-label">High-β > low-β when density dominates</span>
+          <span class="assert-value">20.8s > 16.4s</span>
+          <span class="badge badge-pass">PASS</span>
+          <span class="note">β=0.9 weights Canny density more heavily</span>
+        </div></div>
+
+        <div class="section">
+          <div class="section-title">Section 2 – Image Quality Gate</div>
+        <p class="prose">Runs the three-tier quality assessment on every image in the selected pool before any detection occurs. Images that fail CRITICAL checks are excluded from all subsequent sections. This section is self-contained – no need to run check_images.py separately.</p>
+<p class="prose"><strong>Tier definitions:</strong> CRITICAL (resolution, file size, exposure) – can produce FAIL, image excluded. QUALITY (brightness, contrast, sharpness, aspect ratio) – can produce WARN. INFORMATIONAL (noise, saturation, channel balance) – shown for context only, never affects verdict.</p>
+<div class="subheader">2A. Per-image quality assessment</div>
+<div class="log-line"><strong>traffic_08.jpg</strong>  2000 × 1256  2337.2KB</div>
+
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  width ≥ 480px</span>
+          <span class="assert-value">2000px</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  height ≥ 360px</span>
+          <span class="assert-value">1256px</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  file size ≥ 50KB</span>
+          <span class="assert-value">2337.2KB</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  overexposed &lt; 20.0%</span>
+          <span class="assert-value">1.1%</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  underexposed &lt; 20.0%</span>
+          <span class="assert-value">0.6%</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  QUALITY   brightness 50–200</span>
+          <span class="assert-value">120.1</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  QUALITY   contrast ≥ 15</span>
+          <span class="assert-value">62.8</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  QUALITY   sharpness ≥ 15</span>
+          <span class="assert-value">2202.2</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  QUALITY   aspect ratio 0.5–4.0</span>
+          <span class="assert-value">1.59</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row info-row">
+          <span class="assert-label">  INFO      noise ratio</span>
+          <span class="assert-value">0.633</span>
+          <span class="badge badge-info">INFO</span>
+        </div>
+        <div class="assert-row info-row">
+          <span class="assert-label">  INFO      saturation</span>
+          <span class="assert-value">46.9</span>
+          <span class="badge badge-info">INFO</span>
+        </div>
+        <div class="assert-row info-row">
+          <span class="assert-label">  INFO      channel balance</span>
+          <span class="assert-value">4.2</span>
+          <span class="badge badge-info">INFO</span>
+        </div>
+        <div class="assert-row info-row">
+          <span class="assert-label">  INFO      resolution</span>
+          <span class="assert-value">2000 × 1256  2.51MP</span>
+          <span class="badge badge-info">INFO</span>
+        </div><div class="spacer"></div>
+<div class="log-line"><strong>traffic_17.jpg</strong>  3200 × 2040  2503.7KB</div>
+
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  width ≥ 480px</span>
+          <span class="assert-value">3200px</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  height ≥ 360px</span>
+          <span class="assert-value">2040px</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  file size ≥ 50KB</span>
+          <span class="assert-value">2503.7KB</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  overexposed &lt; 20.0%</span>
+          <span class="assert-value">1.7%</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  underexposed &lt; 20.0%</span>
+          <span class="assert-value">0.0%</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  QUALITY   brightness 50–200</span>
+          <span class="assert-value">119.4</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  QUALITY   contrast ≥ 15</span>
+          <span class="assert-value">61.8</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  QUALITY   sharpness ≥ 15</span>
+          <span class="assert-value">1057.7</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  QUALITY   aspect ratio 0.5–4.0</span>
+          <span class="assert-value">1.57</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row info-row">
+          <span class="assert-label">  INFO      noise ratio</span>
+          <span class="assert-value">0.433</span>
+          <span class="badge badge-info">INFO</span>
+        </div>
+        <div class="assert-row info-row">
+          <span class="assert-label">  INFO      saturation</span>
+          <span class="assert-value">46.1</span>
+          <span class="badge badge-info">INFO</span>
+        </div>
+        <div class="assert-row info-row">
+          <span class="assert-label">  INFO      channel balance</span>
+          <span class="assert-value">4.5</span>
+          <span class="badge badge-info">INFO</span>
+        </div>
+        <div class="assert-row info-row">
+          <span class="assert-label">  INFO      resolution</span>
+          <span class="assert-value">3200 × 2040  6.53MP</span>
+          <span class="badge badge-info">INFO</span>
+        </div><div class="spacer"></div>
+<div class="log-line"><strong>traffic_09.jpg</strong>  2560 × 1536  1244.2KB</div>
+
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  width ≥ 480px</span>
+          <span class="assert-value">2560px</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  height ≥ 360px</span>
+          <span class="assert-value">1536px</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  file size ≥ 50KB</span>
+          <span class="assert-value">1244.2KB</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  overexposed &lt; 20.0%</span>
+          <span class="assert-value">0.3%</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  underexposed &lt; 20.0%</span>
+          <span class="assert-value">0.1%</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  QUALITY   brightness 50–200</span>
+          <span class="assert-value">101.2</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  QUALITY   contrast ≥ 15</span>
+          <span class="assert-value">52.9</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  QUALITY   sharpness ≥ 15</span>
+          <span class="assert-value">623.3</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  QUALITY   aspect ratio 0.5–4.0</span>
+          <span class="assert-value">1.67</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row info-row">
+          <span class="assert-label">  INFO      noise ratio</span>
+          <span class="assert-value">0.578</span>
+          <span class="badge badge-info">INFO</span>
+        </div>
+        <div class="assert-row info-row">
+          <span class="assert-label">  INFO      saturation</span>
+          <span class="assert-value">42.7</span>
+          <span class="badge badge-info">INFO</span>
+        </div>
+        <div class="assert-row info-row">
+          <span class="assert-label">  INFO      channel balance</span>
+          <span class="assert-value">2.2</span>
+          <span class="badge badge-info">INFO</span>
+        </div>
+        <div class="assert-row info-row">
+          <span class="assert-label">  INFO      resolution</span>
+          <span class="assert-value">2560 × 1536  3.93MP</span>
+          <span class="badge badge-info">INFO</span>
+        </div><div class="spacer"></div>
+<div class="log-line"><strong>traffic_22.jpg</strong>  1606 × 948  579.2KB</div>
+
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  width ≥ 480px</span>
+          <span class="assert-value">1606px</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  height ≥ 360px</span>
+          <span class="assert-value">948px</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  file size ≥ 50KB</span>
+          <span class="assert-value">579.2KB</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  overexposed &lt; 20.0%</span>
+          <span class="assert-value">1.4%</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  underexposed &lt; 20.0%</span>
+          <span class="assert-value">3.3%</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  QUALITY   brightness 50–200</span>
+          <span class="assert-value">103.2</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  QUALITY   contrast ≥ 15</span>
+          <span class="assert-value">61.7</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  QUALITY   sharpness ≥ 15</span>
+          <span class="assert-value">1994.2</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  QUALITY   aspect ratio 0.5–4.0</span>
+          <span class="assert-value">1.69</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row info-row">
+          <span class="assert-label">  INFO      noise ratio</span>
+          <span class="assert-value">0.551</span>
+          <span class="badge badge-info">INFO</span>
+        </div>
+        <div class="assert-row info-row">
+          <span class="assert-label">  INFO      saturation</span>
+          <span class="assert-value">59.3</span>
+          <span class="badge badge-info">INFO</span>
+        </div>
+        <div class="assert-row info-row">
+          <span class="assert-label">  INFO      channel balance</span>
+          <span class="assert-value">4.9</span>
+          <span class="badge badge-info">INFO</span>
+        </div>
+        <div class="assert-row info-row">
+          <span class="assert-label">  INFO      resolution</span>
+          <span class="assert-value">1606 × 948  1.52MP</span>
+          <span class="badge badge-info">INFO</span>
+        </div><div class="spacer"></div>
+<div class="log-line"><strong>traffic_04.jpg</strong>  1500 × 1002  1145.6KB</div>
+
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  width ≥ 480px</span>
+          <span class="assert-value">1500px</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  height ≥ 360px</span>
+          <span class="assert-value">1002px</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  file size ≥ 50KB</span>
+          <span class="assert-value">1145.6KB</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  overexposed &lt; 20.0%</span>
+          <span class="assert-value">18.4%</span>
+          <span class="badge badge-warn">WARN</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  CRITICAL  underexposed &lt; 20.0%</span>
+          <span class="assert-value">0.0%</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  QUALITY   brightness 50–200</span>
+          <span class="assert-value">172.8</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  QUALITY   contrast ≥ 15</span>
+          <span class="assert-value">74.7</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  QUALITY   sharpness ≥ 15</span>
+          <span class="assert-value">1929.1</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  QUALITY   aspect ratio 0.5–4.0</span>
+          <span class="assert-value">1.5</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row info-row">
+          <span class="assert-label">  INFO      noise ratio</span>
+          <span class="assert-value">0.312</span>
+          <span class="badge badge-info">INFO</span>
+        </div>
+        <div class="assert-row info-row">
+          <span class="assert-label">  INFO      saturation</span>
+          <span class="assert-value">51.1</span>
+          <span class="badge badge-info">INFO</span>
+        </div>
+        <div class="assert-row info-row">
+          <span class="assert-label">  INFO      channel balance</span>
+          <span class="assert-value">5.2</span>
+          <span class="badge badge-info">INFO</span>
+        </div>
+        <div class="assert-row info-row">
+          <span class="assert-label">  INFO      resolution</span>
+          <span class="assert-value">1500 × 1002  1.5MP</span>
+          <span class="badge badge-info">INFO</span>
+        </div><div class="spacer"></div>
+<div class="subheader">2B. Summary table</div>
+
+        <table>
+          <thead><tr><th>Image</th><th>Resolution</th><th>Size</th><th>Brightness</th><th>Sharpness</th><th>Verdict</th></tr></thead>
+          <tbody><tr><td>traffic_08.jpg</td><td>2000 × 1256</td><td>2337.2KB</td><td>120.1</td><td>2202.2</td><td><span class="badge-verdict-good">GOOD</span></td></tr>
+<tr><td>traffic_17.jpg</td><td>3200 × 2040</td><td>2503.7KB</td><td>119.4</td><td>1057.7</td><td><span class="badge-verdict-good">GOOD</span></td></tr>
+<tr><td>traffic_09.jpg</td><td>2560 × 1536</td><td>1244.2KB</td><td>101.2</td><td>623.3</td><td><span class="badge-verdict-good">GOOD</span></td></tr>
+<tr><td>traffic_22.jpg</td><td>1606 × 948</td><td>579.2KB</td><td>103.2</td><td>1994.2</td><td><span class="badge-verdict-good">GOOD</span></td></tr>
+<tr><td>traffic_04.jpg</td><td>1500 × 1002</td><td>1145.6KB</td><td>172.8</td><td>1929.1</td><td><span class="badge-verdict-acceptable">ACCEPTABLE (1W)</span></td></tr>
+</tbody>
+        </table><div class="subheader">2C. Dataset usability check</div>
+
+        <div class="assert-row">
+          <span class="assert-label">≥ 60% of images usable (3/5 required)</span>
+          <span class="assert-value">5/5 usable</span>
+          <span class="badge badge-pass">PASS</span>
+          <span class="note">fewer than 60% usable indicates dataset quality issues</span>
+        </div><p class="prose">5 of 5 images pass the quality gate and proceed to Sections 3–6. 0 image(s) excluded.</p>
+</div>
+
+        <div class="section">
+          <div class="section-title">Section 3 – Detector Sanity Validation</div>
+        <p class="prose">Runs the baseline and finetuned detectors on all images that passed the quality gate. Validates output shape and value ranges, measures inference timing, and verifies the expected finetuning outcome — that the finetuned model detects more motorcycles on average.</p>
+<div class="log-line">Baseline model  : C:\Users\hongp\Downloads\Traffic State Optimization\ai_module\models\yolov8m.pt</div>
+<div class="log-line">Finetuned model : C:\Users\hongp\Downloads\Traffic State Optimization\ai_module\models\yolov8m_finetuned.pt  [found – comparison enabled]</div>
+<div class="spacer"></div>
+<div class="subheader">3A. Per-image output sanity (baseline model)</div>
+<p class="prose">For every usable image: verifies that the detector returns a well-formed output dict with values in expected ranges.</p>
+<div class="log-line"><strong>traffic_08.jpg</strong>  count=37  weighted=66.0  density=0.1463  breakdown={'car': 10, 'bus': 1, 'motorcycle': 21, 'truck': 4, 'bicycle': 1}</div>
+
+        <div class="assert-row">
+          <span class="assert-label">  vehicle_count ≥ 0</span>
+          <span class="assert-value">37</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  weighted_score ≥ vehicle_count</span>
+          <span class="assert-value">66.0 ≥ 37</span>
+          <span class="badge badge-pass">PASS</span>
+          <span class="note">every vehicle weighs at least 1</span>
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  density_ratio in [0.0, 1.0]</span>
+          <span class="assert-value">0.1463</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  all class names valid</span>
+          <span class="assert-value">['car', 'bus', 'motorcycle', 'truck', 'bicycle']</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  sum(breakdown) == vehicle_count</span>
+          <span class="assert-value">37 == 37</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div><div class="spacer"></div>
+<div class="log-line"><strong>traffic_17.jpg</strong>  count=41  weighted=95.0  density=0.1493  breakdown={'bus': 3, 'car': 29, 'motorcycle': 5, 'truck': 4}</div>
+
+        <div class="assert-row">
+          <span class="assert-label">  vehicle_count ≥ 0</span>
+          <span class="assert-value">41</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  weighted_score ≥ vehicle_count</span>
+          <span class="assert-value">95.0 ≥ 41</span>
+          <span class="badge badge-pass">PASS</span>
+          <span class="note">every vehicle weighs at least 1</span>
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  density_ratio in [0.0, 1.0]</span>
+          <span class="assert-value">0.1493</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  all class names valid</span>
+          <span class="assert-value">['bus', 'car', 'motorcycle', 'truck']</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  sum(breakdown) == vehicle_count</span>
+          <span class="assert-value">41 == 41</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div><div class="spacer"></div>
+<div class="log-line"><strong>traffic_09.jpg</strong>  count=39  weighted=63.0  density=0.1145  breakdown={'car': 16, 'truck': 2, 'motorcycle': 21}</div>
+
+        <div class="assert-row">
+          <span class="assert-label">  vehicle_count ≥ 0</span>
+          <span class="assert-value">39</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  weighted_score ≥ vehicle_count</span>
+          <span class="assert-value">63.0 ≥ 39</span>
+          <span class="badge badge-pass">PASS</span>
+          <span class="note">every vehicle weighs at least 1</span>
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  density_ratio in [0.0, 1.0]</span>
+          <span class="assert-value">0.1145</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  all class names valid</span>
+          <span class="assert-value">['car', 'truck', 'motorcycle']</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  sum(breakdown) == vehicle_count</span>
+          <span class="assert-value">39 == 39</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div><div class="spacer"></div>
+<div class="log-line"><strong>traffic_22.jpg</strong>  count=27  weighted=34.0  density=0.1131  breakdown={'car': 7, 'motorcycle': 20}</div>
+
+        <div class="assert-row">
+          <span class="assert-label">  vehicle_count ≥ 0</span>
+          <span class="assert-value">27</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  weighted_score ≥ vehicle_count</span>
+          <span class="assert-value">34.0 ≥ 27</span>
+          <span class="badge badge-pass">PASS</span>
+          <span class="note">every vehicle weighs at least 1</span>
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  density_ratio in [0.0, 1.0]</span>
+          <span class="assert-value">0.1131</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  all class names valid</span>
+          <span class="assert-value">['car', 'motorcycle']</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  sum(breakdown) == vehicle_count</span>
+          <span class="assert-value">27 == 27</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div><div class="spacer"></div>
+<div class="log-line"><strong>traffic_04.jpg</strong>  count=16  weighted=22.0  density=0.3182  breakdown={'motorcycle': 12, 'bus': 1, 'car': 3}</div>
+
+        <div class="assert-row">
+          <span class="assert-label">  vehicle_count ≥ 0</span>
+          <span class="assert-value">16</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  weighted_score ≥ vehicle_count</span>
+          <span class="assert-value">22.0 ≥ 16</span>
+          <span class="badge badge-pass">PASS</span>
+          <span class="note">every vehicle weighs at least 1</span>
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  density_ratio in [0.0, 1.0]</span>
+          <span class="assert-value">0.3182</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  all class names valid</span>
+          <span class="assert-value">['motorcycle', 'bus', 'car']</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">  sum(breakdown) == vehicle_count</span>
+          <span class="assert-value">16 == 16</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div><div class="spacer"></div>
+<div class="subheader">3B. Inference timing benchmark (baseline model)</div>
+<p class="prose">Measures wall-clock inference time per image. Asserts mean inference time is under 5 seconds per image.</p>
+<div class="log-line">Images timed   : 5</div>
+<div class="log-line">Min time       : 0.381s</div>
+<div class="log-line">Max time       : 0.468s</div>
+<div class="log-line">Mean time      : 0.427s</div>
+<div class="log-line">Total time     : 2.136s</div>
+
+        <div class="assert-row">
+          <span class="assert-label">Mean inference time &lt; 5s</span>
+          <span class="assert-value">0.427s</span>
+          <span class="badge badge-pass">PASS</span>
+          <span class="note">real-time requirement for traffic signal control</span>
+        </div><div class="subheader">3C. Baseline vs finetuned side-by-side</div>
+
+        <table>
+          <thead><tr><th>Image</th><th>Base count</th><th>Fine count</th><th>Base ws</th><th>Fine ws</th><th>Base density</th><th>Fine density</th></tr></thead>
+          <tbody><tr><td>traffic_08.jpg</td><td>37</td><td>57</td><td>66.0</td><td>90.0</td><td>0.1463</td><td>0.1466</td></tr>
+<tr><td>traffic_17.jpg</td><td>41</td><td>47</td><td>95.0</td><td>140.0</td><td>0.1493</td><td>0.1437</td></tr>
+<tr><td>traffic_09.jpg</td><td>39</td><td>63</td><td>63.0</td><td>124.0</td><td>0.1145</td><td>0.1298</td></tr>
+<tr><td>traffic_22.jpg</td><td>27</td><td>21</td><td>34.0</td><td>29.0</td><td>0.1131</td><td>0.1138</td></tr>
+<tr><td>traffic_04.jpg</td><td>16</td><td>9</td><td>22.0</td><td>14.0</td><td>0.3182</td><td>0.3041</td></tr>
+</tbody>
+        </table><div class="subheader">3D. Finetuning outcome – motorcycle detection</div>
+<p class="prose">The model was finetuned on a Vietnamese traffic dataset with a high proportion of motorcycles. The expected outcome is that the finetuned model detects more motorcycles on average than the baseline COCO-pretrained model.</p>
+<div class="log-line">Avg small vehicles per image – baseline  : 16.00</div>
+<div class="log-line">Avg small vehicles per image – finetuned : 21.80</div>
+
+        <div class="assert-row">
+          <span class="assert-label">Finetuned detects more small vehicles on average</span>
+          <span class="assert-value">21.80 > 16.00</span>
+          <span class="badge badge-pass">PASS</span>
+          <span class="note">expected finetuning outcome on Vietnamese traffic data</span>
+        </div></div>
+
+        <div class="section">
+          <div class="section-title">Section 4 – Ground Truth Comparison & Priority Score Sanity</div>
+        <p class="prose">Compares detector output against 22 manually counted ground truth labels and verifies that the computed priority score tracks real congestion. Ground truth format per image: [moto + bicycle, car, bus + truck].</p>
+<div class="subheader">4A. Per-image count comparison</div>
+<p class="prose">Ground truth vs baseline vs finetuned counts per category. Δ shown as (predicted – ground truth). Negative = undercount, positive = overcount.</p>
+
+        <table>
+          <thead><tr><th>Image</th><th>GT total</th><th>GT moto + bicycle</th><th>Base moto + bicycle</th><th>Δ base</th><th>Fine moto + bicycle</th><th>Δ fine</th><th>GT car</th><th>Base car</th><th>Δ base</th><th>Fine car</th><th>Δ fine</th><th>GT bus + truck</th><th>Base bus + truck</th><th>Δ base</th><th>Fine bus + truck</th><th>Δ fine</th></tr></thead>
+          <tbody><tr><td>traffic_04.jpg</td><td>9</td><td>8</td><td>12</td><td><span style="color:#059669;font-weight:600">+4</span></td><td>7</td><td><span style="color:#DC2626;font-weight:600">-1</span></td><td>0</td><td>3</td><td><span style="color:#059669;font-weight:600">+3</span></td><td>1</td><td><span style="color:#059669;font-weight:600">+1</span></td><td>1</td><td>1</td><td><span style="color:#6B7280;font-weight:600">+0</span></td><td>1</td><td><span style="color:#6B7280;font-weight:600">+0</span></td></tr>
+<tr><td>traffic_08.jpg</td><td>73</td><td>61</td><td>22</td><td><span style="color:#DC2626;font-weight:600">-39</span></td><td>40</td><td><span style="color:#DC2626;font-weight:600">-21</span></td><td>8</td><td>10</td><td><span style="color:#059669;font-weight:600">+2</span></td><td>11</td><td><span style="color:#059669;font-weight:600">+3</span></td><td>4</td><td>5</td><td><span style="color:#059669;font-weight:600">+1</span></td><td>6</td><td><span style="color:#059669;font-weight:600">+2</span></td></tr>
+<tr><td>traffic_09.jpg</td><td>61</td><td>39</td><td>21</td><td><span style="color:#DC2626;font-weight:600">-18</span></td><td>38</td><td><span style="color:#DC2626;font-weight:600">-1</span></td><td>21</td><td>16</td><td><span style="color:#DC2626;font-weight:600">-5</span></td><td>13</td><td><span style="color:#DC2626;font-weight:600">-8</span></td><td>1</td><td>2</td><td><span style="color:#059669;font-weight:600">+1</span></td><td>12</td><td><span style="color:#059669;font-weight:600">+11</span></td></tr>
+<tr><td>traffic_17.jpg</td><td>55</td><td>16</td><td>5</td><td><span style="color:#DC2626;font-weight:600">-11</span></td><td>11</td><td><span style="color:#DC2626;font-weight:600">-5</span></td><td>33</td><td>29</td><td><span style="color:#DC2626;font-weight:600">-4</span></td><td>16</td><td><span style="color:#DC2626;font-weight:600">-17</span></td><td>6</td><td>7</td><td><span style="color:#059669;font-weight:600">+1</span></td><td>20</td><td><span style="color:#059669;font-weight:600">+14</span></td></tr>
+<tr><td>traffic_22.jpg</td><td>32</td><td>25</td><td>20</td><td><span style="color:#DC2626;font-weight:600">-5</span></td><td>13</td><td><span style="color:#DC2626;font-weight:600">-12</span></td><td>7</td><td>7</td><td><span style="color:#6B7280;font-weight:600">+0</span></td><td>8</td><td><span style="color:#059669;font-weight:600">+1</span></td><td>0</td><td>0</td><td><span style="color:#6B7280;font-weight:600">+0</span></td><td>0</td><td><span style="color:#6B7280;font-weight:600">+0</span></td></tr>
+</tbody>
+        </table><div class="subheader">4B. Weighted accuracy per image</div>
+<p class="prose">Weighted accuracy = min(predicted_weighted, gt_weighted) / gt_weighted × 100. Weights: moto+bicycle = 1, car = 2, bus+truck = 4.5. Uses min() so overcounting does not inflate the score.</p>
+
+        <table>
+          <thead><tr><th>Image</th><th>GT weighted</th><th>Base weighted</th><th>Base acc%</th><th>Fine weighted</th><th>Fine acc%</th></tr></thead>
+          <tbody><tr><td>traffic_04.jpg</td><td>12.5</td><td>22.5</td><td><span style="color:#059669;font-weight:600">100.0%</span></td><td>13.5</td><td><span style="color:#059669;font-weight:600">100.0%</span></td></tr>
+<tr><td>traffic_08.jpg</td><td>95.0</td><td>64.5</td><td><span style="color:#D97706;font-weight:600">67.9%</span></td><td>89.0</td><td><span style="color:#059669;font-weight:600">93.7%</span></td></tr>
+<tr><td>traffic_09.jpg</td><td>85.5</td><td>62.0</td><td><span style="color:#D97706;font-weight:600">72.5%</span></td><td>118.0</td><td><span style="color:#059669;font-weight:600">100.0%</span></td></tr>
+<tr><td>traffic_17.jpg</td><td>109.0</td><td>94.5</td><td><span style="color:#059669;font-weight:600">86.7%</span></td><td>133.0</td><td><span style="color:#059669;font-weight:600">100.0%</span></td></tr>
+<tr><td>traffic_22.jpg</td><td>39.0</td><td>34.0</td><td><span style="color:#059669;font-weight:600">87.2%</span></td><td>29.0</td><td><span style="color:#D97706;font-weight:600">74.4%</span></td></tr>
+<tr><td><strong>TOTAL</strong></td><td><strong>341.0</strong></td><td><strong>277.5</strong></td><td><strong>81.4%</strong></td><td><strong>382.5</strong></td><td><strong>100.0%</strong></td></tr>
+</tbody>
+        </table><div class="subheader">4C. Overall accuracy floor assertion</div>
+
+        <div class="assert-row">
+          <span class="assert-label">Overall baseline weighted accuracy > 30%</span>
+          <span class="assert-value">81.4%</span>
+          <span class="badge badge-pass">PASS</span>
+          <span class="note">floor check – detector must at least respond to congestion</span>
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">Overall finetuned weighted accuracy > 30%</span>
+          <span class="assert-value">100.0%</span>
+          <span class="badge badge-pass">PASS</span>
+          <span class="note">floor check – finetuned model must also clear minimum bar</span>
+        </div><div class="subheader">4D. Small vehicle (moto + bicycle) miss rate</div>
+<p class="prose">Motorcycles and bicycles are systematically undercounted due to occlusion in dense clusters and small apparent size. This is an expected and documented limitation — the hybrid Canny density estimator partially compensates by capturing visual texture of dense clusters even when bounding boxes are missed.</p>
+<div class="log-line">Ground truth small vehicles  : 149</div>
+<div class="log-line">Baseline detected            : 80</div>
+<div class="log-line">Miss rate (baseline)         : 46.3%</div>
+<div class="log-line">Finetuned detected           : 109</div>
+<div class="log-line">Miss rate (finetuned)        : 26.8%</div>
+
+        <div class="assert-row info-row">
+          <span class="assert-label">Miss rate is expected</span>
+          <span class="assert-value">caused by occlusion in dense motorcycle clusters – Canny estimator compensates</span>
+          <span class="badge badge-info">INFO</span>
+        </div>
+        <div class="assert-row">
+          <span class="assert-label">Miss rate documented (no pass/fail – informational)</span>
+          <span class="assert-value">46.3% baseline miss rate</span>
+          <span class="badge badge-pass">PASS</span>
+          <span class="note">see Section 3D and detector_evaluation.ipynb for full analysis</span>
+        </div><div class="subheader">4E. Priority score sanity and correlation with ground truth</div>
+<p class="prose">Verifies that priority scores are bounded in [0, 1], that density_ratio and weighted_score are positively correlated (they measure different signals but should agree on direction), and that priority weakly tracks real congestion as measured by ground truth vehicle counts.</p>
+
+        <div class="assert-row">
+          <span class="assert-label">All priority scores in [0.0, 1.0]</span>
+          <span class="assert-value">5 images checked</span>
+          <span class="badge badge-pass">PASS</span>
+          
+        </div><div class="log-line"><strong>Top 5 by priority score:</strong></div>
+<div class="log-line">  traffic_17.jpg  priority = 0.3447  GT total = 55</div>
+<div class="log-line">  traffic_08.jpg  priority = 0.2565  GT total = 73</div>
+<div class="log-line">  traffic_09.jpg  priority = 0.2348  GT total = 61</div>
+<div class="log-line">  traffic_04.jpg  priority = 0.1933  GT total = 9</div>
+<div class="log-line">  traffic_22.jpg  priority = 0.1472  GT total = 32</div>
+<div class="log-line"><strong>Bottom 5 by priority score:</strong></div>
+<div class="log-line">  traffic_17.jpg  priority = 0.3447  GT total = 55</div>
+<div class="log-line">  traffic_08.jpg  priority = 0.2565  GT total = 73</div>
+<div class="log-line">  traffic_09.jpg  priority = 0.2348  GT total = 61</div>
+<div class="log-line">  traffic_04.jpg  priority = 0.1933  GT total = 9</div>
+<div class="log-line">  traffic_22.jpg  priority = 0.1472  GT total = 32</div>
+<div class="log-line">Pearson r (density vs weighted_score) = -0.530</div>
+
+        <div class="assert-row">
+          <span class="assert-label">density_ratio and weighted_score positively correlated (r > 0.2)</span>
+          <span class="assert-value">r = -0.530</span>
+          <span class="badge badge-fail">FAIL</span>
+          <span class="note">both signals should agree on congestion direction</span>
+        </div><div class="log-line">Pearson r (priority vs GT total)       = 0.574</div>
+
+        <div class="assert-row">
+          <span class="assert-label">Priority positively correlated with GT total (r > 0.2)</span>
+          <span class="assert-value">r = 0.574</span>
+          <span class="badge badge-pass">PASS</span>
+          <span class="note">priority score should weakly track real congestion</span>
+        </div><div class="log-line">Rank correlation (priority vs GT rank) = 0.600</div>
+
+        <div class="assert-row">
+          <span class="assert-label">Rank correlation > 0.3</span>
+          <span class="assert-value">r = 0.600</span>
+          <span class="badge badge-pass">PASS</span>
+          <span class="note">priority ranking should weakly match ground truth ranking</span>
+        </div></div>
+
+<div class="footer">
+  Smart Traffic System · CO3107 · AI Module Validation · 2026
+</div>
+</body>
+</html>

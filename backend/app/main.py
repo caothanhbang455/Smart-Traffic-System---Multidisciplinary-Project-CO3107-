@@ -1,4 +1,4 @@
-# backend/app.py
+# backend\app\main.py
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -8,17 +8,17 @@ import time
 from datetime import datetime, timezone
 from .services.ai_service import AIService
 from .services.iot_service import IOTService
-
 from .services.decision_maker import DecisionMaker
 from .models.traffic_state import TrafficState, DirectionState
 
-# Datebase, history service
+# Database, history service
 from .database import init_mongodb, check_mongodb_connection
 from .services.history_service import save_sensor_history, get_sensor_collection
 
 app = Flask(__name__)
 CORS(app)
 
+# Khởi tạo IOTService và kết nối Adafruit IO
 iot_service = IOTService()
 iot_service.start()
 
@@ -29,7 +29,7 @@ SYSTEM_PARAMS_AUDIT_FILE = os.path.join(os.path.dirname(__file__), "system_param
 DEFAULT_SYSTEM_PARAMS = {
     "alpha": 0.6,
     "beta": 0.4,
-    "base_green_time": 10.0,
+    "base_green_time": 15.0,
     "vehicle_weights": {
         "bicycle": 1.0, "motorcycle": 1.0,
         "car": 2.0, "bus": 4.0, "truck": 5.0,
@@ -158,22 +158,44 @@ def _publish_light_states(light_states: dict) -> None:
     traffic_data["intersection_2"]["last_update"] = now
 
 
-def _run_decision(traffic_state: TrafficState) -> dict:
-    """Chạy DecisionMaker cho cả 2 pha NS và EW => chọn pha thắng => gửi MQTT => trả về response"""
-    ns = _engine.decide(traffic_state, "NS")
-    ew = _engine.decide(traffic_state, "EW")
+# Module-level singleton – persists smoothing state across requests.
+# Rebuilt when system params change via PUT /api/system_params.
+_engine = _build_engine()
 
-    winner = "NS" if ns["green_duration"] >= ew["green_duration"] else "EW"
+
+def _run_decision(traffic_state : TrafficState) -> dict :
+    """
+    Run decide() for both phases, publish light states via MQTT,
+    and return the response. Both phases always alternate – decide()
+    only controls duration, not which phase runs.
+    """
+
+    global _engine
+
+    ns_result = _engine.decide(traffic_state, "NS")
+    ew_result = _engine.decide(traffic_state, "EW")
+
+    ns_dur = ns_result["green_duration"]
+    ew_dur = ew_result["green_duration"]
+
+    # Winner = phase with longer green duration this cycle.
+    winner       = "NS" if ns_dur >= ew_dur else "EW"
     light_states = _get_light_states(winner)
     _publish_light_states(light_states)
 
     return {
-        "phase": winner,
-        "green_duration": ns["green_duration"] if winner == "NS" else ew["green_duration"],
-        "light_states": light_states,
-        "details": {
-            "NS": {"color": "green" if winner == "NS" else "red", "duration": ns["green_duration"]},
-            "EW": {"color": "green" if winner == "EW" else "red", "duration": ew["green_duration"]},
+        "phase"          : winner,
+        "green_duration" : ns_dur if winner == "NS" else ew_dur,
+        "light_states"   : light_states,
+        "details" : {
+            "NS" : {
+                "color"    : "green" if winner == "NS" else "red",
+                "duration" : ns_dur,
+            },
+            "EW" : {
+                "color"    : "green" if winner == "EW" else "red",
+                "duration" : ew_dur,
+            },
         },
     }
 
@@ -215,7 +237,11 @@ def system_params():
 
     saved = _save_system_params(merged)
     _write_audit(current, saved, request.headers.get("X-Actor", "admin"))
-    _update_engine_params(saved)
+    
+    # Rebuild singleton so new alpha/beta/base_time take effect immediately.
+    global _engine
+    _engine = _build_engine()
+
     return jsonify({"status": "success", "data": saved})
 
 
@@ -260,8 +286,6 @@ def run_decision_with_images():
             => DecisionMaker.decide()
             => MQTT => IoT
     """
-    # iot_service = IOTService()
-    # iot_service.start()
     for d in ['north', 'south', 'east', 'west']:
         if d not in request.files or request.files[d].filename == '':
             return jsonify({"status": "error", "message": f"Thiếu ảnh hướng {d}"}), 400

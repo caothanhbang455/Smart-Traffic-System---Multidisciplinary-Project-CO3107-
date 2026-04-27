@@ -1,218 +1,289 @@
-# backend/services/decision_maker.py
+# backend/app/services/decision_maker.py
 
 """
 DecisionMaker
+=============
+Determines how long each traffic light phase should remain green.
 
-Determines how long the current traffic light phase should remain green.
+The system operates on two fixed alternating phases:
 
-The system assumes two fixed phases:
+    Phase NS  →  north and south lanes move together
+    Phase EW  →  east and west lanes move together
 
-Phase NS -> north and south
-Phase EW -> east and west
+Both phases always alternate. The decision maker only controls duration –
+it does not choose which phase runs next.
 
-Enhancements implemented
-------------------------
-1. Normalization of weighted vehicle score
-2. Green duration stabilization (anti-oscillation)
+Pipeline
+--------
+    TrafficDetector → TrafficState → DecisionMaker → MQTT publish
+
+Priority formula
+----------------
+    normalized    = min(weighted_vehicle_score / max_weighted_score, 1.0)
+    priority      = α × normalized + β × density_ratio
+    raw_duration  = base_time + k × priority
+    adjusted      = raw_duration × environment_factor
+    smoothed      = λ × adjusted + (1 - λ) × previous_duration
+    final         = clamp(smoothed, min_green, max_green)
+
+Parameter choices
+-----------------
+    α = 0.6  :                      vehicle count contributes 60% of priority – most direct 
+                                    signal of congestion.
+
+    β = 0.4  :                      edge density contributes 40% – compensates for occluded
+                                    motorcycles missed by YOLO, captured by Canny estimator.
+
+    base_time = 15s  :              minimum green even with zero traffic.
+
+    k = 40   :                      priority of 1.0 adds 40s → full congestion yields ~55s.
+
+    max_weighted_score = 200 :      normalization ceiling. Scores above this are clipped to 1.0.
+
+    λ = 0.4  :                      new reading contributes 40%, history 60%. Prevents rapid
+                                    oscillation from noisy image input.
+
+    max_change = 10s :              duration cannot shift more than 10s per cycle.
+                                    Avoids sudden timing changes that confuse drivers.
 """
 
 from ..models.traffic_state import TrafficState
 
 
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+
+DEFAULT_ALPHA              = 0.6
+DEFAULT_BETA               = 0.4
+DEFAULT_BASE_TIME          = 15.0   # seconds
+DEFAULT_K                  = 40.0   # seconds per unit priority
+DEFAULT_MIN_GREEN          = 15.0   # seconds
+DEFAULT_MAX_GREEN          = 90.0   # seconds
+DEFAULT_MAX_WEIGHTED_SCORE = 200.0  # normalization ceiling
+DEFAULT_SMOOTHING_FACTOR   = 0.4
+DEFAULT_MAX_CHANGE         = 10.0   # seconds per cycle
+
+
+# ---------------------------------------------------------------------------
+# DecisionMaker
+# ---------------------------------------------------------------------------
+
 class DecisionMaker :
 
-    def __init__(self, alpha : float = 0.6,
-                 beta : float = 0.4,
-                 base_time : float = 10.0,
-                 k : float = 40.0,
-                 min_green : float = 10.0,
-                 max_green : float = 60.0,
-                 max_weighted_score : float = 200.0,
-                 smoothing_factor : float = 0.4,
-                 max_change : float = 10.0) :
+    def __init__(self,
+                 alpha              : float = DEFAULT_ALPHA,
+                 beta               : float = DEFAULT_BETA,
+                 base_time          : float = DEFAULT_BASE_TIME,
+                 k                  : float = DEFAULT_K,
+                 min_green          : float = DEFAULT_MIN_GREEN,
+                 max_green          : float = DEFAULT_MAX_GREEN,
+                 max_weighted_score : float = DEFAULT_MAX_WEIGHTED_SCORE,
+                 smoothing_factor   : float = DEFAULT_SMOOTHING_FACTOR,
+                 max_change         : float = DEFAULT_MAX_CHANGE) :
         """
         Parameters
         ----------
-        alpha, beta         : priority weights
-        base_time           : minimum base green time
-        k                   : scaling factor for priority → seconds
-        max_weighted_score  : expected maximum weighted score for normalization
-        smoothing_factor    : exponential smoothing coefficient
-        max_change          : maximum allowed change in duration per cycle
+        alpha              : priority weight for normalized vehicle score
+        beta               : priority weight for density ratio
+                             (alpha + beta should equal 1.0)
+        base_time          : minimum base green duration in seconds
+        k                  : scaling factor – maps priority [0,1] to additional seconds
+        min_green          : hard floor on final green duration (seconds)
+        max_green          : hard ceiling on final green duration (seconds)
+        max_weighted_score : normalization ceiling for weighted vehicle score
+        smoothing_factor   : exponential smoothing coefficient λ
+        max_change         : maximum allowed duration change per cycle (seconds)
         """
 
-        self.alpha = alpha
-        self.beta = beta
-
-        self.base_time = base_time
-        self.k = k
-
-        self.min_green = min_green
-        self.max_green = max_green
-
+        self.alpha              = alpha
+        self.beta               = beta
+        self.base_time          = base_time
+        self.k                  = k
+        self.min_green          = min_green
+        self.max_green          = max_green
         self.max_weighted_score = max_weighted_score
+        self.smoothing_factor   = smoothing_factor
+        self.max_change         = max_change
 
-        self.smoothing_factor = smoothing_factor
-        self.max_change = max_change
+        # Per-phase smoothing state – persists across requests via singleton.
+        # Both start at base_time so the first cycle is stable.
+        self._previous_duration = {
+            "NS" : base_time,
+            "EW" : base_time,
+        }
 
-        # store previous duration per phase for smoothing
-        self.previous_duration_NS = base_time
-        self.previous_duration_EW = base_time
+
+    # -----------------------------------------------------------------------
+    # Private helpers
+    # -----------------------------------------------------------------------
+
+    def _normalize(self, weighted_score : float) -> float :
+        """Normalize weighted vehicle score to [0, 1]."""
+        return min(weighted_score / self.max_weighted_score, 1.0)
 
 
-    def _normalize_weighted_score(self, weighted_score : float) :
+    def _compute_priority(self, weighted_score : float, density : float) -> float :
         """
-        Normalize weighted vehicle score to [0, 1].
+        Compute priority score for a phase.
+
+            priority = α × normalize(weighted_score) + β × density
         """
-        normalized = weighted_score / self.max_weighted_score
-        return min(normalized, 1.0)
+        return self.alpha * self._normalize(weighted_score) + self.beta * density
 
 
-    def _compute_priority(self, weighted_score : float, density : float) :
+    def _aggregate_phase(self, traffic_state : TrafficState, phase : str) -> tuple[float, float] :
         """
-        Compute priority using normalized metrics.
+        Aggregate both directions of a phase into (weighted_score, density).
+
+        Weighted score is summed – total vehicles in both directions matter.
+        Density is averaged – it is a ratio, not a count.
         """
-        normalized_score = self._normalize_weighted_score(weighted_score)
-        priority = (self.alpha * normalized_score + self.beta * density)
-        return priority
-
-
-    def _environment_factor(self, temperature : float, light : float) :
-        """
-        Environmental adjustment factor.
-        """
-
-        factor = 1.0
-
-        if temperature > 35 :
-            factor += 0.10
-
-        if light > 900 :
-            factor += 0.05
-
-        return factor
-
-
-    def _aggregate_phase(self, traffic_state : TrafficState, phase : str) :
-        """
-        Combine two directions into one phase.
-        """
-
         if phase == "NS" :
-            weighted_score = (
-                traffic_state.north.weighted_vehicle_score + traffic_state.south.weighted_vehicle_score
-            )
-            density = (traffic_state.north.density_ratio + traffic_state.south.density_ratio) / 2
-
+            weighted_score = (traffic_state.north.weighted_vehicle_score +
+                              traffic_state.south.weighted_vehicle_score)
+            density = (traffic_state.north.density_ratio +
+                       traffic_state.south.density_ratio) / 2
         else :
-            weighted_score = (
-                traffic_state.east.weighted_vehicle_score + traffic_state.west.weighted_vehicle_score
-            )
-            density = (traffic_state.east.density_ratio + traffic_state.west.density_ratio) / 2
+            weighted_score = (traffic_state.east.weighted_vehicle_score +
+                              traffic_state.west.weighted_vehicle_score)
+            density = (traffic_state.east.density_ratio +
+                       traffic_state.west.density_ratio) / 2
 
         return weighted_score, density
 
 
-    def _smooth_duration(self, new_duration : float) :
+    def _environment_factor(self, temperature : float, light : float) -> float :
         """
-        Apply exponential smoothing.
+        Compute environmental adjustment multiplier.
+
+        High temperature and bright sunlight correlate with higher traffic
+        volume. A small multiplier extends green time under these conditions.
+
+            temperature > 35°C  →  +10%
+            light > 900 lux     →  +5%
+
+        These are heuristic values requiring real-world calibration.
         """
-        smoothed = (self.smoothing_factor * new_duration + (1 - self.smoothing_factor) * self.previous_duration)
-        return smoothed
+        factor = 1.0
+        if temperature > 35 :
+            factor += 0.10
+        if light > 900 :
+            factor += 0.05
+        return factor
 
 
-    def _limit_change(self, duration : float) :
+    def _apply_smoothing(self, new_duration : float, previous : float) -> float :
         """
-        Limit maximum change between cycles.
+        Exponential smoothing to prevent abrupt duration changes.
+
+            smoothed = λ × new + (1 - λ) × previous
         """
+        return self.smoothing_factor * new_duration + (1 - self.smoothing_factor) * previous
 
-        difference = duration - self.previous_duration
 
-        if difference > self.max_change :
-            duration = self.previous_duration + self.max_change
-        elif difference < -self.max_change :
-            duration = self.previous_duration - self.max_change
+    def _apply_change_limit(self, duration : float, previous : float) -> float :
+        """
+        Cap the maximum shift between consecutive cycles.
 
+        Ensures no single cycle changes duration by more than max_change
+        seconds, making timing predictable for drivers.
+        """
+        delta = duration - previous
+        if delta > self.max_change :
+            return previous + self.max_change
+        elif delta < -self.max_change :
+            return previous - self.max_change
         return duration
-    
-    
-    def decide(self, traffic_state : TrafficState, current_phase : str) :
+
+
+    # -----------------------------------------------------------------------
+    # Public API
+    # -----------------------------------------------------------------------
+
+    def decide(self, traffic_state : TrafficState, current_phase : str) -> dict :
         """
-        Determine green duration for the current phase.
+        Determine the green duration for the current phase.
+
+        Pipeline
+        --------
+        1. Aggregate both directions of the phase into (score, density).
+        2. Compute priority score.
+        3. Compute raw duration = base_time + k × priority.
+        4. Adjust for environmental conditions (temperature, light).
+        5. Apply exponential smoothing against the previous duration.
+        6. Clamp the change to max_change seconds.
+        7. Hard clamp to [min_green, max_green].
+        8. Save duration for next cycle's smoothing.
+
+        Parameters
+        ----------
+        traffic_state : TrafficState with metrics for all 4 directions
+                        and environmental sensor readings.
+        current_phase : "NS" or "EW"
+
+        Returns
+        -------
+        dict with keys:
+            phase          : str   – the phase decided
+            green_duration : float – recommended green duration in seconds
         """
 
         print("\n==============================")
-        print("TRAFFIC DECISION ENGINE")
+        print(f"DECISION ENGINE  –  Phase {current_phase}")
         print("==============================")
 
+        # -- Step 1 & 2: aggregate + priority -------------------------------
         weighted_score, density = self._aggregate_phase(traffic_state, current_phase)
-
-        print("\n[Phase Aggregation]")
-        print("Phase :", current_phase)
-        print("Weighted Score :", weighted_score)
-        print("Density :", round(density, 3))
-
-        normalized_score = self._normalize_weighted_score(weighted_score)
-
-        print("\n[Normalization]")
-        print("Normalized Score :", round(normalized_score, 3))
-
         priority = self._compute_priority(weighted_score, density)
 
-        print("\n[Priority Calculation]")
-        print("Priority =", round(priority, 3))
+        print(f"\n[Phase Aggregation]")
+        print(f"  weighted_score   : {weighted_score}")
+        print(f"  density          : {density:.4f}")
+        print(f"  normalized_score : {self._normalize(weighted_score):.4f}")
+        print(f"  priority         : {priority:.4f}")
 
+        # -- Step 3: raw duration -------------------------------------------
         raw_duration = self.base_time + self.k * priority
 
-        print("\n[Raw Duration]")
-        print("Base Time :", self.base_time)
-        print("k * Priority :", round(self.k * priority, 2))
-        print("Raw Duration :", round(raw_duration, 2))
+        print(f"\n[Raw Duration]")
+        print(f"  base_time + k × priority = {self.base_time} + {self.k * priority:.2f} = {raw_duration:.2f}s")
 
+        # -- Step 4: environment adjustment ---------------------------------
         env_factor = self._environment_factor(
             traffic_state.temperature,
             traffic_state.light_intensity
         )
+        adjusted = raw_duration * env_factor
 
-        print("\n[Environment Adjustment]")
-        print("Temperature :", traffic_state.temperature)
-        print("Light :", traffic_state.light_intensity)
-        print("Factor :", env_factor)
+        print(f"\n[Environment]")
+        print(f"  temperature : {traffic_state.temperature}°C")
+        print(f"  light       : {traffic_state.light_intensity} lux")
+        print(f"  factor      : {env_factor:.2f}")
+        print(f"  adjusted    : {adjusted:.2f}s")
 
-        duration = raw_duration * env_factor
+        # -- Step 5 & 6: smoothing + change limit ---------------------------
+        previous = self._previous_duration[current_phase]
+        smoothed = self._apply_smoothing(adjusted, previous)
+        limited  = self._apply_change_limit(smoothed, previous)
 
-        print("After Environment :", round(duration, 2))
+        print(f"\n[Smoothing + Change Limit]")
+        print(f"  previous  : {previous:.2f}s")
+        print(f"  smoothed  : {smoothed:.2f}s")
+        print(f"  limited   : {limited:.2f}s")
 
-        # Use per-phase previous duration
-        previous = self.previous_duration_NS if current_phase == "NS" else self.previous_duration_EW
+        # -- Step 7: hard clamp ---------------------------------------------
+        final = max(self.min_green, min(self.max_green, limited))
 
-        smoothed = self.smoothing_factor * duration + (1 - self.smoothing_factor) * previous
-
-        print("\n[Smoothing]")
-        print("Previous Duration :", round(previous, 2))
-        print("Smoothed Duration :", round(smoothed, 2))
-
-        difference = smoothed - previous
-        if difference > self.max_change :
-            smoothed = previous + self.max_change
-        elif difference < -self.max_change :
-            smoothed = previous - self.max_change
-
-        print("\n[Change Limiting]")
-        print("Limited Duration :", round(smoothed, 2))
-
-        smoothed = max(self.min_green, smoothed)
-        smoothed = min(self.max_green, smoothed)
-
-        print("\n[Final Clamp]")
-        print("Final Duration :", round(smoothed, 2))
-
-        # Save back to per-phase previous
-        if current_phase == "NS" :
-            self.previous_duration_NS = smoothed
-        else :
-            self.previous_duration_EW = smoothed
-
+        print(f"\n[Final]")
+        print(f"  clamped to [{self.min_green}, {self.max_green}]")
+        print(f"  green_duration : {final:.2f}s")
         print("==============================\n")
 
-        return { "phase" : current_phase, "green_duration" : round(smoothed, 2) }
+        # -- Step 8: save for next cycle ------------------------------------
+        self._previous_duration[current_phase] = final
+
+        return {
+            "phase"          : current_phase,
+            "green_duration" : round(final, 2),
+        }
